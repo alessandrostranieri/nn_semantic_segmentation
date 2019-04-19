@@ -1,5 +1,5 @@
 ---
-title: Welcome Page
+title: "Welcome Page"
 layout: default
 ---
 
