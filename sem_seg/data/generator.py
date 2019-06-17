@@ -61,10 +61,10 @@ if __name__ == '__main__':
 
     # CREATE GENERATOR
     # TODO Add configuration dictionary
-    generator: DataGenerator = DataGenerator(KITTI_BASE_DIR, 'train.txt', batch_size=1, target_size=(256, 256))
+    generator: DataGenerator = DataGenerator(KITTI_BASE_DIR, 'train.txt', batch_size=4, target_size=(256, 256))
 
     # GET FIRST BATCH AND CHECK THAT DIMENSIONS MATCH
     i, m = generator[0]
-    expected_shape: Tuple[int, int, int, int] = (1, 256, 256, 3)
+    expected_shape: Tuple[int, int, int, int] = (4, 256, 256, 3)
     assert i.shape == expected_shape, f"Image batch in the wrong shape: {i.shape}"
     assert m.shape == expected_shape, f"Mask batch in the wrong shape: {m.shape}"
