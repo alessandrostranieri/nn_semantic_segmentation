@@ -6,7 +6,7 @@ from PIL import Image
 from keras.utils import Sequence
 from keras_preprocessing.image import load_img, img_to_array
 
-from sem_seg.utils.paths import KITTI_BASE
+from sem_seg.utils.paths import KITTI_BASE_DIR
 
 
 class DataGenerator(Sequence):
@@ -58,9 +58,12 @@ class DataGenerator(Sequence):
 
 
 if __name__ == '__main__':
-    # CREATE GENERATOR
-    generator: DataGenerator = DataGenerator(KITTI_BASE, 'train.txt', batch_size=1, target_size=(256, 256))
 
+    # CREATE GENERATOR
+    # TODO Add configuration dictionary
+    generator: DataGenerator = DataGenerator(KITTI_BASE_DIR, 'train.txt', batch_size=1, target_size=(256, 256))
+
+    # GET FIRST BATCH AND CHECK THAT DIMENSIONS MATCH
     i, m = generator[0]
     expected_shape: Tuple[int, int, int, int] = (1, 256, 256, 3)
     assert i.shape == expected_shape, f"Image batch in the wrong shape: {i.shape}"

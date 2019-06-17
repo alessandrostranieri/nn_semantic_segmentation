@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 from sem_seg.utils.labels import generate_semantic_rgb
-from sem_seg.utils.paths import KITTI_LABEL_IMAGE, KITTI_RAW_IMAGE
+from sem_seg.utils.paths import KITTI_LABEL_IMAGES_DIR, KITTI_RAW_IMAGES_DIR
 
 if __name__ == '__main__':
     """
@@ -22,9 +22,9 @@ if __name__ == '__main__':
 
     # LOAD ORIGINAL AND MASK IMAGE
     file_name: str = '000000_10.png'
-    original_image_path: pl.Path = KITTI_RAW_IMAGE / file_name
+    original_image_path: pl.Path = KITTI_RAW_IMAGES_DIR / file_name
     assert original_image_path.exists()
-    label_image_path: pl.Path = KITTI_LABEL_IMAGE / file_name
+    label_image_path: pl.Path = KITTI_LABEL_IMAGES_DIR / file_name
     assert label_image_path.exists()
 
     original_image: Image = Image.open(original_image_path)
