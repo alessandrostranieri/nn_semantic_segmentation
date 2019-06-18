@@ -76,3 +76,19 @@ def generate_semantic_rgb(label_image: Image) -> Image:
         label_rgb_image[mask] = label_color
 
     return fromarray(label_rgb_image)
+
+
+def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
+    # CHECK
+    assert label_image.shape[2] == 1, "Image is not single channel"
+
+    # SET VALUES
+    mask_list: List[np.ndarray] = []
+    for label in classes:
+        mask = np.equal(label_image, label)
+        layer = np.all(mask, axis=-1).astype(float)
+        mask_list.append(layer)
+
+    split_label_images: np.ndarray = np.stack(mask_list, axis=-1)
+
+    return split_label_images
