@@ -17,7 +17,7 @@ class DataGenerator(Sequence):
                  image_name_file_name: str,
                  target_size: Tuple[int, int],
                  batch_size: int = 32,
-                 classes: List[int] = None) -> None:
+                 labels: List[int] = None) -> None:
         """
         Constructor
         :param image_dir: Main data-set directory
@@ -28,7 +28,7 @@ class DataGenerator(Sequence):
         self.image_dir = image_dir
         self.target_size = target_size
         self.batch_size = batch_size
-        self.classes = [1] if not classes else classes
+        self.classes = [1] if not labels else labels
 
         # GET LIST OF FILES
         self.list_names: List[str] = []

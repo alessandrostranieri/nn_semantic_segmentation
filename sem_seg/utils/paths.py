@@ -2,6 +2,8 @@ import pathlib as pl
 
 DATA_DIR: pl.Path = pl.Path.home() / 'University' / 'NN' / 'Project' / 'data'
 
+MODELS_DIR: pl.Path = DATA_DIR / 'models'
+
 SETS_DIR: str = 'ImageSets'
 IMAGE_DIR: str = 'JPEGImages'
 LABEL_DIR: str = 'SegmentationClass'
