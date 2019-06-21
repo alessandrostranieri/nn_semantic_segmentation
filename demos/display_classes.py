@@ -23,7 +23,7 @@ if __name__ == '__main__':
     """
 
     # LOAD ORIGINAL AND MASK IMAGE
-    file_name: str = '000000_10.png'
+    file_name: str = '000095_10.png'
     original_image_path: pl.Path = KITTI_RAW_IMAGES_DIR / file_name
     assert original_image_path.exists()
     label_image_path: pl.Path = KITTI_LABEL_IMAGES_DIR / file_name
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     label_image: np.ndarray = np.array(Image.open(label_image_path))
 
     labels: List[int] = [4, 5, 6, 7, 8, 9]
-    semantic_rgb: np.ndarray = generate_semantic_rgb(label_image, labels=labels)
+    semantic_rgb: np.ndarray = generate_semantic_rgb(label_image)
 
     # PLOT IMAGES
     fig, (ax1, ax2) = plt.subplots(2, 1)

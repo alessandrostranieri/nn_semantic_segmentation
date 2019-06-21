@@ -54,11 +54,11 @@ segmentation_labels: List[Label] = [
 # @formatter:on
 
 
-def generate_semantic_rgb(label_image: np.ndarray, labels: List[int]) -> np.ndarray:
+def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
     """
     Generate a color coded label image from an original label image
     :param label_image: 1-channel label image
-    :param labels: label ids that should be displayed
+    :param labels: label ids that should be displsayed
     :return: 3-channels color coded
     """
     # WORKING LABEL IMAGE MUST BE PURE 2D
@@ -70,9 +70,7 @@ def generate_semantic_rgb(label_image: np.ndarray, labels: List[int]) -> np.ndar
     # CREATE OUTPUT IMAGE
     label_rgb_image: np.ndarray = np.zeros((input_shape[0], input_shape[1], 3), dtype=np.uint8)
 
-    for label_index in labels:
-        label = segmentation_labels[label_index]
-
+    for label in segmentation_labels:
         label_id: int = label.id
         label_color: Tuple[int, int, int] = label.color
 

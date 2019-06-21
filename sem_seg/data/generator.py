@@ -45,23 +45,32 @@ class DataGenerator(Sequence):
         return int(np.ceil(len(self.list_names) / float(self.batch_size)))
 
     def __getitem__(self, index) -> Tuple[np.ndarray, np.ndarray]:
-        batch_names: List[str] = self.list_names[index * self.batch_size:(index + 1) * self.batch_size]
-
         batch_images: np.ndarray = np.zeros(((self.batch_size,) + self.target_size + (3,)))
         batch_masks: np.ndarray = np.zeros(((self.batch_size,) + self.target_size + (len(self.classes),)))
-        for index, batch_name in enumerate(batch_names):
-            image: Image.Image = Image.open(self.image_dir / IMAGE_DIR / batch_name)
+        for index, instance in enumerate(self.get_batch(index)):
+            image, mask = instance
+
             resized_image = image.resize(size=self.target_size)
             resized_image_array: np.ndarray = img_to_array(resized_image)
             batch_images[index] = resized_image_array
 
-            mask: Image.Image = Image.open(self.image_dir / LABEL_DIR / batch_name)
             resized_mask = mask.resize(self.target_size)
             resized_mask_array: np.ndarray = img_to_array(resized_mask)
             prepared_mask: np.ndarray = split_label_image(resized_mask_array, self.classes)
             batch_masks[index] = prepared_mask
 
         return batch_images, batch_masks
+
+    def get_batch(self, index: int) -> List[Tuple[Image.Image, Image.Image]]:
+        batch_names: List[str] = self.list_names[index * self.batch_size:(index + 1) * self.batch_size]
+
+        output_batch: List[Tuple[Image.Image, Image.Image]] = []
+        for index, batch_name in enumerate(batch_names):
+            image: Image.Image = Image.open(self.image_dir / IMAGE_DIR / batch_name)
+            mask: Image.Image = Image.open(self.image_dir / LABEL_DIR / batch_name)
+            output_batch.append((image, mask))
+
+        return output_batch
 
 
 if __name__ == '__main__':
@@ -112,14 +121,20 @@ if __name__ == '__main__':
     val_image: np.ndarray = val_images[0]
     val_image = val_image.astype(int)
     val_labels: np.ndarray = val_labels[0]
+    val_original_image, val_original_labels = validation_generator.get_batch(0)[0]
+    val_original_image: np.ndarray = np.array(val_original_image)
+    val_original_labels: np.ndarray = np.array(val_original_labels)
     # CONVERT LABELS TO RGB
     val_labels = merge_label_images(val_labels, labels)
-    val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels, labels=labels)
+    val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels)
+    val_original_label_rgb: np.ndarray = generate_semantic_rgb(val_original_labels)
 
     # VISUALIZED DATA
-    fig, (ax1, ax2) = plt.subplots(2, 1)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
 
     ax1.imshow(val_image)
     ax2.imshow(val_labels_rgb)
+    ax3.imshow(val_original_image)
+    ax4.imshow(val_original_label_rgb)
 
     plt.show()
