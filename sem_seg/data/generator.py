@@ -1,12 +1,13 @@
 import pathlib as pl
 from typing import List, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from keras.utils import Sequence
-from keras_preprocessing.image import load_img, img_to_array
+from keras_preprocessing.image import img_to_array
 
-from sem_seg.utils.labels import split_label_image
+from sem_seg.utils.labels import split_label_image, generate_semantic_rgb, merge_label_images
 from sem_seg.utils.paths import KITTI_BASE_DIR, SETS_DIR, IMAGE_DIR, LABEL_DIR
 
 
@@ -17,7 +18,7 @@ class DataGenerator(Sequence):
                  image_name_file_name: str,
                  target_size: Tuple[int, int],
                  batch_size: int = 32,
-                 labels: List[int] = None) -> None:
+                 active_labels: List[int] = None) -> None:
         """
         Constructor
         :param image_dir: Main data-set directory
@@ -28,7 +29,7 @@ class DataGenerator(Sequence):
         self.image_dir = image_dir
         self.target_size = target_size
         self.batch_size = batch_size
-        self.classes = [1] if not labels else labels
+        self.classes = [1] if not active_labels else active_labels
 
         # GET LIST OF FILES
         self.list_names: List[str] = []
@@ -65,13 +66,14 @@ class DataGenerator(Sequence):
 
 if __name__ == '__main__':
 
+    labels = [0, 6, 7, 8, 9]
+
     # CREATE GENERATOR
-    # TODO Add configuration dictionary
     training_generator: DataGenerator = DataGenerator(KITTI_BASE_DIR,
                                                       'train.txt',
                                                       batch_size=4,
                                                       target_size=(256, 256),
-                                                      classes=[1, 2])
+                                                      active_labels=labels)
 
     # CHECK THAT GENERATOR LEN WORKS
     generator_len: int = len(training_generator)
@@ -82,7 +84,7 @@ if __name__ == '__main__':
     i, m = training_generator[0]
     expected_shape_x: Tuple[int, int, int, int] = (4, 256, 256, 3)
     assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
-    expected_shape_y: Tuple[int, int, int, int] = (4, 256, 256, 2)
+    expected_shape_y: Tuple[int, int, int, int] = (4, 256, 256, 5)
     assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
 
     # CHECK THE LOOPING THROUGH WORKS
@@ -97,10 +99,27 @@ if __name__ == '__main__':
                                                         'val.txt',
                                                         batch_size=4,
                                                         target_size=(256, 256),
-                                                        classes=[1, 2])
+                                                        active_labels=labels)
     print(f'Number of validation batches: {len(validation_generator)}')
     for batch in validation_generator:
         i, m = batch
         # DO SOMETHING SIMPLE
         assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
         assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
+
+    # GET ONE IMAGE-LABELS PAIR
+    val_images, val_labels = validation_generator[0]
+    val_image: np.ndarray = val_images[0]
+    val_image = val_image.astype(int)
+    val_labels: np.ndarray = val_labels[0]
+    # CONVERT LABELS TO RGB
+    val_labels = merge_label_images(val_labels, labels)
+    val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels, labels=labels)
+
+    # VISUALIZED DATA
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+
+    ax1.imshow(val_image)
+    ax2.imshow(val_labels_rgb)
+
+    plt.show()

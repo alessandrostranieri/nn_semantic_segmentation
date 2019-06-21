@@ -24,8 +24,8 @@ if __name__ == '__main__':
     # TRAIN
     num_epochs: int = 1
     batch_size: int = 4
-    train_generator = DataGenerator(KITTI_BASE_DIR, 'train.txt', (128, 128), batch_size=batch_size, labels=labels)
-    validation_generator = DataGenerator(KITTI_BASE_DIR, 'val.txt', (128, 128), batch_size=batch_size, labels=labels)
+    train_generator = DataGenerator(KITTI_BASE_DIR, 'train.txt', (128, 128), batch_size=batch_size, active_labels=labels)
+    validation_generator = DataGenerator(KITTI_BASE_DIR, 'val.txt', (128, 128), batch_size=batch_size, active_labels=labels)
 
     model.fit_generator(generator=train_generator, verbose=2, validation_data=validation_generator)
 

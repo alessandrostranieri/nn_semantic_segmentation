@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from typing import Tuple, List
 
 import numpy as np
-from PIL import Image
-from PIL.Image import fromarray
 
 
 @dataclass
@@ -56,26 +54,34 @@ segmentation_labels: List[Label] = [
 # @formatter:on
 
 
-def generate_semantic_rgb(label_image: Image) -> Image:
+def generate_semantic_rgb(label_image: np.ndarray, labels: List[int]) -> np.ndarray:
     """
     Generate a color coded label image from an original label image
     :param label_image: 1-channel label image
+    :param labels: label ids that should be displayed
     :return: 3-channels color coded
     """
-    label_np: np.ndarray = np.array(label_image)
+    # WORKING LABEL IMAGE MUST BE PURE 2D
+    input_shape = label_image.shape
+    assert len(input_shape) == 2 or input_shape == 1, 'Input image must be single channel'
+    if label_image.ndim == 3:
+        label_image = np.squeeze(label_image, -1)
 
-    label_rgb_image: np.ndarray = np.zeros((label_np.shape[0], label_np.shape[1], 3), dtype=np.uint8)
+    # CREATE OUTPUT IMAGE
+    label_rgb_image: np.ndarray = np.zeros((input_shape[0], input_shape[1], 3), dtype=np.uint8)
 
-    for labels in segmentation_labels:
-        label_id: int = labels.id
-        label_color: Tuple[int, int, int] = labels.color
+    for label_index in labels:
+        label = segmentation_labels[label_index]
+
+        label_id: int = label.id
+        label_color: Tuple[int, int, int] = label.color
 
         # GET MASK
-        mask = (label_np == label_id)
+        mask = (label_image == label_id)
 
         label_rgb_image[mask] = label_color
 
-    return fromarray(label_rgb_image)
+    return label_rgb_image
 
 
 def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
@@ -92,3 +98,12 @@ def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray
     split_label_images: np.ndarray = np.stack(mask_list, axis=-1)
 
     return split_label_images
+
+
+def merge_label_images(label_image: np.ndarray, labels: List[int]) -> np.ndarray:
+    result: np.ndarray = np.zeros(shape=(label_image.shape[0], label_image.shape[1]))
+    for index, label in enumerate(labels):
+        mask = label_image[:, :, index] == 1.0
+        result[mask] = label
+
+    return result

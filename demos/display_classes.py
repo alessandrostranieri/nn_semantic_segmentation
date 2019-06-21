@@ -1,6 +1,8 @@
 import pathlib as pl
+from typing import List
 
 import matplotlib.pyplot as plt
+import numpy as np
 from PIL import Image
 
 from sem_seg.utils.labels import generate_semantic_rgb
@@ -27,9 +29,11 @@ if __name__ == '__main__':
     label_image_path: pl.Path = KITTI_LABEL_IMAGES_DIR / file_name
     assert label_image_path.exists()
 
-    original_image: Image = Image.open(original_image_path)
-    label_image: Image = Image.open(label_image_path)
-    semantic_rgb: Image = generate_semantic_rgb(label_image)
+    original_image: np.ndarray = np.array(Image.open(original_image_path))
+    label_image: np.ndarray = np.array(Image.open(label_image_path))
+
+    labels: List[int] = [4, 5, 6, 7, 8, 9]
+    semantic_rgb: np.ndarray = generate_semantic_rgb(label_image, labels=labels)
 
     # PLOT IMAGES
     fig, (ax1, ax2) = plt.subplots(2, 1)
