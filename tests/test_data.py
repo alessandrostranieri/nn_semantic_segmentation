@@ -1,6 +1,10 @@
+from typing import Tuple
+
 import numpy as np
 
-from sem_seg.utils.labels import split_label_image, merge_label_images, generate_semantic_rgb
+from sem_seg.utils.labels import split_label_image, merge_label_images, generate_semantic_rgb, pad_and_resize
+
+from PIL import Image
 
 
 def test_split_label_image():
@@ -60,6 +64,20 @@ def test_generate_semantic_rgb():
     expected_image[6:8, 6:8] = (128, 64, 128)  # ROAD
     expected_image[1:3, 1:3] = (220, 20, 60)  # PERSON
 
-    actual: np.ndarray = generate_semantic_rgb(input_image, labels=[0, 7, 24])
+    actual: np.ndarray = generate_semantic_rgb(input_image)
 
     assert (actual == expected_image).all()
+
+
+def test_image_pad_resize():
+    # WHITE WIDE IMAGE
+    dummy_image: Image.Image = Image.new(mode='RGB', size=(200, 100), color=(1, 1, 1))
+
+    # EXPECTED
+    expected: np.ndarray = np.zeros((12, 12, 3), dtype=int)
+    expected[3:9, :, :] = (1, 1, 1)
+
+    actual: Image.Image = pad_and_resize(dummy_image, (12, 12))
+    actual_array: np.ndarray = np.array(actual)
+
+    assert (expected == actual_array).all()

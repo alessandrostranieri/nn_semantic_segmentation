@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple, List
 
 import numpy as np
+from PIL import Image
 
 
 @dataclass
@@ -84,6 +85,9 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
 
 def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
     # CHECK
+    if label_image.ndim == 2:
+        label_image = np.expand_dims(label_image, -1)
+
     assert label_image.shape[2] == 1, "Image is not single channel"
 
     # SET VALUES
@@ -105,3 +109,14 @@ def merge_label_images(label_image: np.ndarray, labels: List[int]) -> np.ndarray
         result[mask] = label
 
     return result
+
+
+def pad_and_resize(input_image: Image.Image, target_size: Tuple[int, int]) -> Image.Image:
+    longest_size: int = max(*input_image.size)
+    shortest_size: int = min(*input_image.size)
+    square_size: Tuple[int, int] = (longest_size, longest_size)
+    canvas: Image.Image = Image.new(mode=input_image.mode, size=square_size)
+    top_left: Tuple[int, int] = (0, (longest_size - shortest_size) // 2)
+    canvas.paste(input_image, box=top_left)
+    resized = canvas.resize(target_size, resample=Image.NEAREST)
+    return resized

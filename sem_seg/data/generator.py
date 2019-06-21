@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from keras.utils import Sequence
-from keras_preprocessing.image import img_to_array
 
-from sem_seg.utils.labels import split_label_image, generate_semantic_rgb, merge_label_images
+from sem_seg.utils.labels import split_label_image, generate_semantic_rgb, merge_label_images, pad_and_resize
 from sem_seg.utils.paths import KITTI_BASE_DIR, SETS_DIR, IMAGE_DIR, LABEL_DIR
 
 
@@ -50,13 +49,13 @@ class DataGenerator(Sequence):
         for index, instance in enumerate(self.get_batch(index)):
             image, mask = instance
 
-            resized_image = image.resize(size=self.target_size)
-            resized_image_array: np.ndarray = img_to_array(resized_image)
-            batch_images[index] = resized_image_array
+            transformed_image: Image.Image = pad_and_resize(image, target_size=self.target_size)
+            image_array: np.ndarray = np.array(transformed_image)
+            batch_images[index] = image_array
 
-            resized_mask = mask.resize(self.target_size)
-            resized_mask_array: np.ndarray = img_to_array(resized_mask)
-            prepared_mask: np.ndarray = split_label_image(resized_mask_array, self.classes)
+            transformed_mask: Image.Image = pad_and_resize(mask, target_size=self.target_size)
+            mask_array: np.ndarray = np.array(transformed_mask)
+            prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
             batch_masks[index] = prepared_mask
 
         return batch_images, batch_masks
@@ -121,20 +120,22 @@ if __name__ == '__main__':
     val_image: np.ndarray = val_images[0]
     val_image = val_image.astype(int)
     val_labels: np.ndarray = val_labels[0]
+
     val_original_image, val_original_labels = validation_generator.get_batch(0)[0]
     val_original_image: np.ndarray = np.array(val_original_image)
     val_original_labels: np.ndarray = np.array(val_original_labels)
+
     # CONVERT LABELS TO RGB
     val_labels = merge_label_images(val_labels, labels)
     val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels)
     val_original_label_rgb: np.ndarray = generate_semantic_rgb(val_original_labels)
 
     # VISUALIZED DATA
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    fig, ((ax11, ax12), (ax21, ax22)) = plt.subplots(2, 2)
 
-    ax1.imshow(val_image)
-    ax2.imshow(val_labels_rgb)
-    ax3.imshow(val_original_image)
-    ax4.imshow(val_original_label_rgb)
+    ax11.imshow(val_original_image)
+    ax12.imshow(val_original_label_rgb)
+    ax21.imshow(val_image)
+    ax22.imshow(val_labels_rgb)
 
     plt.show()
