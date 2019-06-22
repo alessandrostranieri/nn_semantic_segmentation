@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple, List
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 @dataclass
@@ -119,3 +119,13 @@ def pad_and_resize(input_image: Image.Image, target_size: Tuple[int, int]) -> Im
     canvas.paste(input_image, box=top_left)
     resized = canvas.resize(target_size, resample=Image.NEAREST)
     return resized
+
+
+def resize_and_crop(input_image: np.ndarray, target_size: Tuple[int, int]) -> Image.Image:
+    assert input_image.dtype == np.uint8, "Input array type must be np.uint8"
+
+    mode: str = 'RGB' if input_image.ndim == 3 else 'L'
+    input_pil_image: Image.Image = Image.fromarray(input_image, mode)
+    fitted = ImageOps.fit(input_pil_image, target_size)
+
+    return fitted

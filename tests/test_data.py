@@ -2,7 +2,8 @@ from typing import Tuple
 
 import numpy as np
 
-from sem_seg.utils.labels import split_label_image, merge_label_images, generate_semantic_rgb, pad_and_resize
+from sem_seg.utils.labels import split_label_image, merge_label_images, generate_semantic_rgb, pad_and_resize, \
+    resize_and_crop
 
 from PIL import Image
 
@@ -73,10 +74,24 @@ def test_image_pad_resize():
     dummy_image: Image.Image = Image.new(mode='RGB', size=(200, 100), color=(1, 1, 1))
 
     # EXPECTED
-    expected: np.ndarray = np.zeros((12, 12, 3), dtype=int)
+    expected: np.ndarray = np.zeros((12, 12, 3), dtype=np.uint8)
     expected[3:9, :, :] = (1, 1, 1)
 
     actual: Image.Image = pad_and_resize(dummy_image, (12, 12))
     actual_array: np.ndarray = np.array(actual)
+
+    assert (expected == actual_array).all()
+
+
+def test_resize_and_crop():
+    # DUMMY IMAGE - SQUARE IMAGE WITH WHITE BANDS
+    dummy_image: np.ndarray = np.zeros((12, 12, 3), dtype=np.uint8)
+    dummy_image[3:9, :, :] = (1, 1, 1)
+
+    # EXPECTED - JUST THE WHITE IMAGE
+    expected: np.ndarray = np.ones(shape=(200, 100, 3), dtype=np.uint8)
+
+    actual: Image.Image = resize_and_crop(dummy_image, (200, 100))
+    actual_array: np.ndarray = np.array(actual).swapaxes(0, 1)
 
     assert (expected == actual_array).all()
