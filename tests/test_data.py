@@ -11,11 +11,10 @@ def test_split_label_image():
     ms: int = 12
 
     # CREATE INPUT MASK
-    input_mask: np.ndarray = np.zeros(shape=(ms, ms, 1))
+    input_mask: np.ndarray = np.zeros(shape=(ms, ms))
     # INSERT 2 LABELLED SHAPES IN THE MIDDLE
-    input_mask[6:8, 6:8, :] = 1.0
-    input_mask[1:3, 1:3, :] = 2.0
-    # print(input_mask)
+    input_mask[6:8, 6:8] = 1.0
+    input_mask[1:3, 1:3] = 2.0
 
     expected_mask: np.ndarray = np.zeros(shape=(ms, ms, 3))
     expected_mask[:, :, 0] = 1.0

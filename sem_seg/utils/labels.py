@@ -64,7 +64,7 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
     """
     # WORKING LABEL IMAGE MUST BE PURE 2D
     input_shape = label_image.shape
-    assert len(input_shape) == 2 or input_shape == 1, 'Input image must be single channel'
+    assert len(input_shape) == 2 or input_shape[2] == 1, 'Input image must be single channel'
     if label_image.ndim == 3:
         label_image = np.squeeze(label_image, -1)
 
@@ -84,17 +84,16 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
 
 
 def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
-    # CHECK
-    if label_image.ndim == 2:
-        label_image = np.expand_dims(label_image, -1)
-
-    assert label_image.shape[2] == 1, "Image is not single channel"
+    input_shape = label_image.shape
+    assert len(input_shape) == 2 or input_shape[2] == 1, 'Input image must be single channel'
+    if label_image.ndim == 3:
+        label_image = np.squeeze(label_image, -1)
 
     # SET VALUES
     mask_list: List[np.ndarray] = []
     for label in classes:
         mask = np.equal(label_image, label)
-        layer = np.all(mask, axis=-1).astype(float)
+        layer = mask.astype(float)
         mask_list.append(layer)
 
     split_label_images: np.ndarray = np.stack(mask_list, axis=-1)
