@@ -1,16 +1,18 @@
-from dataclasses import dataclass
 from typing import Tuple, List
 
 import numpy as np
 from PIL import Image, ImageOps
 
 
-@dataclass
 class Label:
     """Represents a segmentation label."""
-    name: str
-    id: int
-    color: Tuple[int, int, int]
+
+    def __init__(self, name: str, id: int, color: Tuple[int, int, int]) -> None:
+        super().__init__()
+
+        self.name = name
+        self.id = id
+        self.color = color
 
 
 # @formatter:off
