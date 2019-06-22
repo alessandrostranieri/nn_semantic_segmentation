@@ -47,17 +47,19 @@ class DataGenerator(Sequence):
     def __getitem__(self, index) -> Tuple[np.ndarray, np.ndarray]:
         batch_images: np.ndarray = np.zeros(((self.batch_size,) + self.target_size + (3,)))
         batch_masks: np.ndarray = np.zeros(((self.batch_size,) + self.target_size + (len(self.classes),)))
-        for index, instance in enumerate(self.get_batch(index)):
+        pure_batch = self.get_batch(index)
+
+        for idx, instance in enumerate(pure_batch):
             image, mask = instance
 
             transformed_image: Image.Image = pad_and_resize(image, target_size=self.target_size)
             image_array: np.ndarray = np.array(transformed_image)
-            batch_images[index] = image_array
+            batch_images[idx] = image_array
 
             transformed_mask: Image.Image = pad_and_resize(mask, target_size=self.target_size)
             mask_array: np.ndarray = np.array(transformed_mask)
             prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
-            batch_masks[index] = prepared_mask
+            batch_masks[idx] = prepared_mask
 
         return batch_images, batch_masks
 
