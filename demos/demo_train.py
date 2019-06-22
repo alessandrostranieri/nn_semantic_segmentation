@@ -13,9 +13,7 @@ import pandas as pd
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-
 if __name__ == '__main__':
-
     labels = [0,  # UNLABELLED
               7,  # ROAD
               21,  # VEGETATION
@@ -42,7 +40,10 @@ if __name__ == '__main__':
     validation_generator = DataGenerator(KITTI_BASE_DIR, 'val.txt', target_size=image_shape, batch_size=batch_size,
                                          active_labels=labels)
 
-    history = model.fit_generator(generator=train_generator, verbose=2, validation_data=validation_generator)
+    history = model.fit_generator(generator=train_generator,
+                                  epochs=num_epochs,
+                                  verbose=2,
+                                  validation_data=validation_generator)
 
     # SAVE THE MODEL
     print(f'Saving model...')
