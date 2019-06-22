@@ -102,7 +102,7 @@ def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray
 
 
 def merge_label_images(label_image: np.ndarray, labels: List[int]) -> np.ndarray:
-    result: np.ndarray = np.zeros(shape=(label_image.shape[0], label_image.shape[1]))
+    result: np.ndarray = np.zeros(shape=(label_image.shape[0], label_image.shape[1]), dtype=np.uint8)
     for index, label in enumerate(labels):
         mask = label_image[:, :, index] == 1.0
         result[mask] = label

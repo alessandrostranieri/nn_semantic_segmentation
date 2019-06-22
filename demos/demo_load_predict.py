@@ -36,6 +36,7 @@ if __name__ == '__main__':
     input_images, input_labels = validation_generator[0]
     original_batch = validation_generator.get_batch(0)
     original_image, original_labels = original_batch[0]
+    original_size: Tuple[int, int] = original_image.size
 
     # GENERATE A PREDICTION
     predicted: np.ndarray = model.predict(input_images)
@@ -65,9 +66,16 @@ if __name__ == '__main__':
 
     # INPUT SEGMENTATION - RECONSTRUCTED
     ax12.set_title('Semantic: Input')
+    input_labels = input_labels[0]
+    input_labels = input_labels.astype(np.uint8)
+    input_labels = merge_label_images(input_labels, labels=labels)
+    input_labels = generate_semantic_rgb(input_labels)
+    predicted_rgb_resized = np.array(resize_and_crop(input_labels, original_size))
+    ax12.imshow(predicted_rgb_resized)
 
     # PREDICTED SEGMENTATION
     ax22.set_title('Semantic: Predicted')
-    ax22.imshow(predicted_rgb)
+    predicted_rgb_resized = np.array(resize_and_crop(predicted_rgb, original_size))
+    ax22.imshow(predicted_rgb_resized)
 
     plt.show()
