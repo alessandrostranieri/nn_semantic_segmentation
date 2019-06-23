@@ -2,10 +2,12 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 
 from sem_seg.data.generator import DataGenerator
 from sem_seg.utils.labels import generate_semantic_rgb, merge_label_images, resize_and_crop
 from sem_seg.utils.paths import KITTI_BASE_DIR
+from sem_seg.utils.transformations import resize
 
 if __name__ == '__main__':
 
@@ -57,30 +59,44 @@ if __name__ == '__main__':
     val_original_label_rgb: np.ndarray = generate_semantic_rgb(val_original_labels)
 
     # GENERATOR PRE-PROCESSED IMAGES
-    val_images, val_labels = validation_generator[0]
-    val_image: np.ndarray = val_images[0]
+    val_image_batch, val_labels_batch = validation_generator[0]
+
+    # GET SINGLE IMAGES FROM BATCH
+    val_image = val_image_batch[0]
     val_image = val_image.astype(np.uint8)
-    val_labels: np.ndarray = val_labels[0]
+    val_labels = val_labels_batch[0]
     val_labels = val_labels.astype(np.uint8)
+
+    # COLORIZE LABELS
     val_labels = merge_label_images(val_labels, labels)
     val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels)
 
     # IMAGES RECOMPOSED FROM INPUT
     original_size: Tuple[int, int] = val_original_image.size
-    val_recomposed_image = resize_and_crop(val_image, original_size)
+    val_recomposed_image = resize(Image.fromarray(val_image), original_size)
     val_recomposed_image_array = np.array(val_recomposed_image)
-    val_recomposed_labels = resize_and_crop(val_labels, original_size)
+
+    val_recomposed_labels = resize(Image.fromarray(val_labels), original_size)
     val_recomposed_labels_array = np.array(val_recomposed_labels)
+
     val_recomposed_labels_rgb = generate_semantic_rgb(val_recomposed_labels_array)
 
     # VISUALIZED DATA
     fig, ((ax11, ax12, ax13), (ax21, ax22, ax23)) = plt.subplots(2, 3)
 
+    ax11.set_title('Original Camera')
     ax11.imshow(val_original_image_array)
+
+    ax21.set_title('Original Semantic')
     ax21.imshow(val_original_label_rgb)
+
+    ax12.set_title('Input Camera')
     ax12.imshow(val_image)
+    ax22.set_title('Input Semantic')
     ax22.imshow(val_labels_rgb)
+    ax13.set_title('Recomposed Camera')
     ax13.imshow(val_recomposed_image_array)
+    ax23.set_title('Recomposed Semantic')
     ax23.imshow(val_recomposed_labels_rgb)
 
     plt.show()

@@ -7,6 +7,7 @@ from keras.utils import Sequence
 
 from sem_seg.utils.labels import split_label_image, pad_and_resize
 from sem_seg.utils.paths import SETS_DIR, IMAGE_DIR, LABEL_DIR
+from sem_seg.utils.transformations import resize
 
 
 class DataGenerator(Sequence):
@@ -50,11 +51,11 @@ class DataGenerator(Sequence):
         for idx, instance in enumerate(pure_batch):
             image, mask = instance
 
-            transformed_image: Image.Image = pad_and_resize(image, target_size=self.target_size)
+            transformed_image: Image.Image = resize(image, target_size=self.target_size)
             image_array: np.ndarray = np.array(transformed_image)
             batch_images[idx] = image_array
 
-            transformed_mask: Image.Image = pad_and_resize(mask, target_size=self.target_size)
+            transformed_mask: Image.Image = resize(mask, target_size=self.target_size)
             mask_array: np.ndarray = np.array(transformed_mask)
             prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
             batch_masks[idx] = prepared_mask

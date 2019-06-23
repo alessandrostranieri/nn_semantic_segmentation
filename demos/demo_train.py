@@ -34,7 +34,7 @@ if __name__ == '__main__':
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     # TRAIN
-    num_epochs: int = 10
+    num_epochs: int = 50
     batch_size: int = 4
     train_generator = DataGenerator(KITTI_BASE_DIR, 'train.txt', target_size=image_shape, batch_size=batch_size,
                                     active_labels=labels)
