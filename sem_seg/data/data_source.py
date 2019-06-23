@@ -2,6 +2,7 @@ import pathlib as pl
 from typing import List, Tuple
 
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 
 class DataSource:
@@ -47,6 +48,50 @@ class KittiDataSource(DataSource):
 
     def get_val_data(self) -> List[Tuple[str, str]]:
         return self._val_data
+
+
+class CityscapesDataSource(DataSource):
+    def __init__(self, base_dir: pl.Path, random_seed: int = 42) -> None:
+        super().__init__()
+
+        # BASE DIRECTORIES
+        camera_images_base_dir: pl.Path = base_dir / 'leftImg8bit_trainvaltest' / 'leftImg8bit'
+        label_images_base_dir: pl.Path = base_dir / 'gtFine_trainvaltest' / 'gtFine'
+
+        # TRAIN IMAGES
+        camera_images_train_dir: pl.Path = camera_images_base_dir / 'train'
+        camera_images_train_names: List[str] = [str(name) for name in
+                                                camera_images_train_dir.glob("**/*leftImg8bit.png")]
+
+        # TRAIN LABEL IMAGES
+        label_images_train_dir: pl.Path = label_images_base_dir / 'train'
+        label_images_train_names: List[str] = [str(name) for name in label_images_train_dir.glob("**/*_labelIds.png")]
+
+        # TRAIN DATA
+        self._train_data: List[Tuple[str, str]] = [(i, l) for i, l in
+                                                   zip(camera_images_train_names, label_images_train_names)]
+        self._train_data = shuffle(self._train_data, random_state=random_seed)
+
+        # VAL IMAGES
+        camera_images_val_dir: pl.Path = camera_images_base_dir / 'val'
+        camera_images_val_names: List[str] = [str(name) for name in
+                                              camera_images_val_dir.glob("**/*leftImg8bit.png")]
+
+        # VAL LABEL IMAGES
+        label_images_val_dir: pl.Path = label_images_base_dir / 'val'
+        label_images_val_names: List[str] = [str(name) for name in label_images_val_dir.glob("**/*_labelIds.png")]
+
+        # VAL DATA
+        self._val_data: List[Tuple[str, str]] = [(i, l) for i, l in
+                                                 zip(camera_images_val_names, label_images_val_names)]
+        self._val_data = shuffle(self._val_data, random_state=random_seed)
+
+    def get_train_data(self) -> List[Tuple[str, str]]:
+        return self._train_data
+
+    def get_val_data(self) -> List[Tuple[str, str]]:
+        return self._val_data
+
 
 
 

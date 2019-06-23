@@ -1,3 +1,4 @@
+import itertools
 from typing import Tuple, List
 
 import matplotlib.pyplot as plt
@@ -12,7 +13,11 @@ from sem_seg.utils.transformations import resize
 
 if __name__ == '__main__':
 
-    labels = [0, 6, 7, 8, 9]
+    labels = [0,  # UNLABELLED
+              7,  # ROAD
+              21,  # VEGETATION
+              24,  # PERSON
+              26]  # CAR
 
     # CREATE GENERATOR
     data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR)]
@@ -35,20 +40,20 @@ if __name__ == '__main__':
     assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
 
     # CHECK THE LOOPING THROUGH WORKS
-    for batch in training_generator:
+    for batch in itertools.islice(training_generator, 10):
         i, m = batch
         # DO SOMETHING SIMPLE
         assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
         assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
 
-    # DO THE SAME FOR VALIADATION GENERATOR
+    # DO THE SAME FOR VALIDATION GENERATOR
     validation_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                         phase='val',
                                                         batch_size=4,
                                                         target_size=(256, 256),
                                                         active_labels=labels)
     print(f'Number of validation batches: {len(validation_generator)}')
-    for batch in validation_generator:
+    for batch in itertools.islice(validation_generator, 10):
         i, m = batch
         # DO SOMETHING SIMPLE
         assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
