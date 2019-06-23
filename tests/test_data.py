@@ -1,11 +1,8 @@
-from typing import Tuple
-
 import numpy as np
+from PIL import Image
 
 from sem_seg.utils.labels import split_label_image, merge_label_images, generate_semantic_rgb, pad_and_resize, \
     resize_and_crop
-
-from PIL import Image
 
 
 def test_split_label_image():

@@ -61,7 +61,6 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
     """
     Generate a color coded label image from an original label image
     :param label_image: 1-channel label image
-    :param labels: label ids that should be displsayed
     :return: 3-channels color coded
     """
     # WORKING LABEL IMAGE MUST BE PURE 2D

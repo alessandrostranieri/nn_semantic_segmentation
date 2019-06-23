@@ -1,11 +1,12 @@
-from typing import Tuple
+from typing import Tuple, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
+from sem_seg.data.data_source import DataSource, KittiDataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.utils.labels import generate_semantic_rgb, merge_label_images, resize_and_crop
+from sem_seg.utils.labels import generate_semantic_rgb, merge_label_images
 from sem_seg.utils.paths import KITTI_BASE_DIR
 from sem_seg.utils.transformations import resize
 
@@ -14,8 +15,9 @@ if __name__ == '__main__':
     labels = [0, 6, 7, 8, 9]
 
     # CREATE GENERATOR
-    training_generator: DataGenerator = DataGenerator(KITTI_BASE_DIR,
-                                                      'train.txt',
+    data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR)]
+    training_generator: DataGenerator = DataGenerator(data_sources=data_sources,
+                                                      phase='train',
                                                       batch_size=4,
                                                       target_size=(256, 256),
                                                       active_labels=labels)
@@ -40,8 +42,8 @@ if __name__ == '__main__':
         assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
 
     # DO THE SAME FOR VALIADATION GENERATOR
-    validation_generator: DataGenerator = DataGenerator(KITTI_BASE_DIR,
-                                                        'val.txt',
+    validation_generator: DataGenerator = DataGenerator(data_sources=data_sources,
+                                                        phase='val',
                                                         batch_size=4,
                                                         target_size=(256, 256),
                                                         active_labels=labels)

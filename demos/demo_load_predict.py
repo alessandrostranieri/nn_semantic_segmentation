@@ -1,15 +1,13 @@
-import os
-from typing import Tuple
+from typing import Tuple, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+from sem_seg.data.data_source import KittiDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
 from sem_seg.models.deeplabv3plus import Deeplabv3
 from sem_seg.utils.labels import generate_semantic_rgb, resize_and_crop, merge_label_images
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 if __name__ == '__main__':
 
@@ -28,8 +26,9 @@ if __name__ == '__main__':
     model.load_weights(str(MODELS_DIR / 'model_weights.h5'))
 
     # GET A VALIDATION BATCH
-    validation_generator: DataGenerator = DataGenerator(KITTI_BASE_DIR,
-                                                        'val.txt',
+    data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR)]
+    validation_generator: DataGenerator = DataGenerator(data_sources=data_sources,
+                                                        phase='val',
                                                         target_size=image_shape,
                                                         batch_size=1,
                                                         active_labels=labels)
