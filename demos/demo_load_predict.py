@@ -9,7 +9,7 @@ from sem_seg.models.deeplabv3plus import Deeplabv3
 from sem_seg.utils.labels import generate_semantic_rgb, resize_and_crop, merge_label_images
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 if __name__ == '__main__':
 

@@ -1,6 +1,7 @@
 import os
 from typing import Tuple
 
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.optimizers import Adam, Optimizer
 
 from sem_seg.data.generator import DataGenerator
@@ -11,7 +12,7 @@ from sem_seg.utils.paths import KITTI_BASE_DIR, MODELS_DIR
 import pathlib as pl
 import pandas as pd
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 if __name__ == '__main__':
     labels = [0,  # UNLABELLED
@@ -33,22 +34,21 @@ if __name__ == '__main__':
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     # TRAIN
-    num_epochs: int = 5
+    num_epochs: int = 10
     batch_size: int = 4
     train_generator = DataGenerator(KITTI_BASE_DIR, 'train.txt', target_size=image_shape, batch_size=batch_size,
                                     active_labels=labels)
     validation_generator = DataGenerator(KITTI_BASE_DIR, 'val.txt', target_size=image_shape, batch_size=batch_size,
                                          active_labels=labels)
 
+    model_path: pl.Path = MODELS_DIR / 'model_weights.h5'
+    model_checkpoint = ModelCheckpoint(str(model_path), save_best_only=True, save_weights_only=True, verbose=1)
+    early_stopping = EarlyStopping(patience=5, verbose=1)
     history = model.fit_generator(generator=train_generator,
                                   epochs=num_epochs,
+                                  callbacks=[model_checkpoint, early_stopping],
                                   verbose=2,
                                   validation_data=validation_generator)
-
-    # SAVE THE MODEL
-    print(f'Saving model...')
-    model_path: pl.Path = MODELS_DIR / 'model_weights.h5'
-    model.save_weights(str(model_path))
 
     # SAVE HISTORY
     print(f'Saving History')
