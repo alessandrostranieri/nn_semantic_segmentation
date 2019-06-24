@@ -3,8 +3,11 @@ from typing import List
 
 from sem_seg.data.data_source import KittiDataSource, CityscapesDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
+from sem_seg.data.transformations import Resize, split_label_image, merge_label_images
+from sem_seg.utils.labels import CityscapesLabels
 from sem_seg.utils.paths import KITTI_BASE_DIR, CITYSCAPES_BASE_DIR
 import pathlib as pl
+import numpy as np
 
 
 def test_kitti_data_source():
@@ -85,3 +88,27 @@ def test_generator_combine_data_sources():
                                                       random_seed=42)
 
     assert len(val_data_generator) == 135
+
+
+def test_label_integrity():
+    """
+    Check that the resized version of the original labels can be reconstructed from the matrix which will be the
+    neural network's input
+    """
+
+    kitti_data_source: KittiDataSource = KittiDataSource(KITTI_BASE_DIR)
+    train_data_generator: DataGenerator = DataGenerator(data_sources=[kitti_data_source],
+                                                        phase='train',
+                                                        batch_size=4,
+                                                        target_size=(256, 256),
+                                                        active_labels=[0, 1],
+                                                        random_seed=42)
+
+    original_image, original_labels = train_data_generator.get_batch(0)[0]
+    resized_original = Resize((256, 256))(original_labels)
+    resized_original_array = np.array(resized_original)
+
+    resized_split = split_label_image(resized_original_array, CityscapesLabels.ALL)
+    resized_merged = merge_label_images(resized_split, CityscapesLabels.ALL)
+
+    assert (resized_original_array == resized_merged).all()
