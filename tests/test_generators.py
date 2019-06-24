@@ -25,6 +25,15 @@ def test_kitti_data_source():
     assert image_name == '000095_10.png'
 
 
+def test_kitti_data_source_with_limig():
+    kitti_data_source: KittiDataSource = KittiDataSource(KITTI_BASE_DIR, limit=4)
+
+    train_data = kitti_data_source.get_train_data()
+    assert len(train_data) == 4
+    val_data = kitti_data_source.get_val_data()
+    assert len(val_data) == 4
+
+
 def test_cityscapes_data_source():
     cityscapes_data_source: CityscapesDataSource = CityscapesDataSource(CITYSCAPES_BASE_DIR)
 
@@ -43,6 +52,15 @@ def test_cityscapes_data_source():
         image_name = search(r"\w+_\d+_\d+", pl.Path(val_instance[0]).name)[0]
         segmentation_name = search(r"\w+_\d+_\d+", pl.Path(val_instance[1]).name)[0]
         assert image_name == segmentation_name
+
+
+def test_cityscapes_data_source_with_limit():
+    cityscapes_data_source: CityscapesDataSource = CityscapesDataSource(CITYSCAPES_BASE_DIR, limit=4)
+
+    train_data = cityscapes_data_source.get_train_data()
+    assert len(train_data) == 4
+    val_data = cityscapes_data_source.get_val_data()
+    assert len(val_data) == 4
 
 
 def test_generator_combine_data_sources():

@@ -6,8 +6,7 @@ from keras.utils import Sequence
 from sklearn.utils import shuffle
 
 from sem_seg.data.data_source import DataSource
-from sem_seg.utils.labels import split_label_image
-from sem_seg.utils.transformations import resize
+from sem_seg.data.transformations import split_label_image, Resize, ImageTransformation
 
 
 class DataGenerator(Sequence):
@@ -30,6 +29,7 @@ class DataGenerator(Sequence):
         self.target_size = target_size
         self.batch_size = batch_size
         self.classes = [1] if not active_labels else active_labels
+        self.transformation: ImageTransformation = Resize(self.target_size)
 
         self.file_paths: List[Tuple[str, str]] = []
         for index, source in enumerate(self.data_sources):
@@ -59,11 +59,11 @@ class DataGenerator(Sequence):
         for idx, instance in enumerate(pure_batch):
             image, mask = instance
 
-            transformed_image: Image.Image = resize(image, target_size=self.target_size)
+            transformed_image: Image.Image = self.transformation(image)
             image_array: np.ndarray = np.array(transformed_image)
             batch_images[idx] = image_array
 
-            transformed_mask: Image.Image = resize(mask, target_size=self.target_size)
+            transformed_mask: Image.Image = self.transformation(mask)
             mask_array: np.ndarray = np.array(transformed_mask)
             prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
             batch_masks[idx] = prepared_mask

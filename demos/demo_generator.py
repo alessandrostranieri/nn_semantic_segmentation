@@ -7,9 +7,9 @@ from PIL import Image
 
 from sem_seg.data.data_source import DataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.utils.labels import generate_semantic_rgb, merge_label_images
+from sem_seg.data.transformations import merge_label_images, Resize
+from sem_seg.utils.labels import generate_semantic_rgb
 from sem_seg.utils.paths import CITYSCAPES_BASE_DIR
-from sem_seg.utils.transformations import resize
 
 if __name__ == '__main__':
 
@@ -79,11 +79,11 @@ if __name__ == '__main__':
     val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels)
 
     # IMAGES RECOMPOSED FROM INPUT
-    original_size: Tuple[int, int] = val_original_image.size
-    val_recomposed_image = resize(Image.fromarray(val_image), original_size)
+    resize = Resize(val_original_image.size)
+    val_recomposed_image = resize(Image.fromarray(val_image))
     val_recomposed_image_array = np.array(val_recomposed_image)
 
-    val_recomposed_labels = resize(Image.fromarray(val_labels), original_size)
+    val_recomposed_labels = resize(Image.fromarray(val_labels))
     val_recomposed_labels_array = np.array(val_recomposed_labels)
 
     val_recomposed_labels_rgb = generate_semantic_rgb(val_recomposed_labels_array)

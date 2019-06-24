@@ -84,33 +84,6 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
     return label_rgb_image
 
 
-def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
-    input_shape = label_image.shape
-    assert len(input_shape) == 2 or input_shape[2] == 1, 'Input image must be single channel'
-    if label_image.ndim == 3:
-        label_image = np.squeeze(label_image, -1)
-
-    # SET VALUES
-    mask_list: List[np.ndarray] = []
-    for label in classes:
-        mask = np.equal(label_image, label)
-        layer = mask.astype(float)
-        mask_list.append(layer)
-
-    split_label_images: np.ndarray = np.stack(mask_list, axis=-1)
-
-    return split_label_images
-
-
-def merge_label_images(label_image: np.ndarray, labels: List[int]) -> np.ndarray:
-    result: np.ndarray = np.zeros(shape=(label_image.shape[0], label_image.shape[1]), dtype=np.uint8)
-    for index, label in enumerate(labels):
-        mask = label_image[:, :, index] == 1.0
-        result[mask] = label
-
-    return result
-
-
 def pad_and_resize(input_image: Image.Image, target_size: Tuple[int, int]) -> Image.Image:
     longest_size: int = max(*input_image.size)
     shortest_size: int = min(*input_image.size)
