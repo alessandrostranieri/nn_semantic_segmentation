@@ -26,7 +26,7 @@ class DataGenerator(Sequence):
         super().__init__()
 
         self.data_sources = data_sources
-        self.target_size = target_size
+        self.target_size = target_size[0], target_size[1]
         self.batch_size = batch_size
         self.classes = [1] if not active_labels else active_labels
         self.transformation: ImageTransformation = Resize(self.target_size)

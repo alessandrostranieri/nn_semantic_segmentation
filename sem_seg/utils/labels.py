@@ -15,6 +15,10 @@ class Label:
         self.color = color
 
 
+class CityscapesLabels:
+    ALL = list(range(0, 34))
+
+
 # @formatter:off
 # noinspection PyPep8
 segmentation_labels: List[Label] = [
