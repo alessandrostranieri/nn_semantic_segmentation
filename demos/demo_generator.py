@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
-from sem_seg.data.data_source import DataSource, KittiDataSource
+from sem_seg.data.data_source import DataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
 from sem_seg.utils.labels import generate_semantic_rgb, merge_label_images
-from sem_seg.utils.paths import KITTI_BASE_DIR
+from sem_seg.utils.paths import CITYSCAPES_BASE_DIR
 from sem_seg.utils.transformations import resize
 
 if __name__ == '__main__':
@@ -20,7 +20,7 @@ if __name__ == '__main__':
               26]  # CAR
 
     # CREATE GENERATOR
-    data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR)]
+    data_sources: List[DataSource] = [CityscapesDataSource(CITYSCAPES_BASE_DIR)]
     training_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                       phase='train',
                                                       batch_size=4,

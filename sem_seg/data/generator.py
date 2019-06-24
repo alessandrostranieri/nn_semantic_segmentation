@@ -1,13 +1,12 @@
-import pathlib as pl
 from typing import List, Tuple
 
 import numpy as np
 from PIL import Image
 from keras.utils import Sequence
+from sklearn.utils import shuffle
 
 from sem_seg.data.data_source import DataSource
-from sem_seg.utils.labels import split_label_image, pad_and_resize
-from sem_seg.utils.paths import SETS_DIR, IMAGE_DIR, LABEL_DIR
+from sem_seg.utils.labels import split_label_image
 from sem_seg.utils.transformations import resize
 
 
@@ -18,7 +17,8 @@ class DataGenerator(Sequence):
                  phase: str,
                  target_size: Tuple[int, int],
                  batch_size: int = 32,
-                 active_labels: List[int] = None) -> None:
+                 active_labels: List[int] = None,
+                 random_seed: int = 42) -> None:
         """
         Constructor
         :param image_dir: Main data-set directory
@@ -41,6 +41,8 @@ class DataGenerator(Sequence):
                 raise ValueError
 
             self.file_paths.extend(file_names)
+
+        self.file_paths = shuffle(self.file_paths, random_state=random_seed)
 
     def __len__(self) -> int:
         """

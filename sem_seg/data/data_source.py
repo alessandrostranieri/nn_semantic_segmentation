@@ -2,7 +2,6 @@ import pathlib as pl
 from typing import List, Tuple
 
 from sklearn.model_selection import train_test_split
-from sklearn.utils import shuffle
 
 
 class DataSource:
@@ -51,7 +50,7 @@ class KittiDataSource(DataSource):
 
 
 class CityscapesDataSource(DataSource):
-    def __init__(self, base_dir: pl.Path, random_seed: int = 42) -> None:
+    def __init__(self, base_dir: pl.Path) -> None:
         super().__init__()
 
         # BASE DIRECTORIES
@@ -70,7 +69,6 @@ class CityscapesDataSource(DataSource):
         # TRAIN DATA
         self._train_data: List[Tuple[str, str]] = [(i, l) for i, l in
                                                    zip(camera_images_train_names, label_images_train_names)]
-        self._train_data = shuffle(self._train_data, random_state=random_seed)
 
         # VAL IMAGES
         camera_images_val_dir: pl.Path = camera_images_base_dir / 'val'
@@ -84,7 +82,6 @@ class CityscapesDataSource(DataSource):
         # VAL DATA
         self._val_data: List[Tuple[str, str]] = [(i, l) for i, l in
                                                  zip(camera_images_val_names, label_images_val_names)]
-        self._val_data = shuffle(self._val_data, random_state=random_seed)
 
     def get_train_data(self) -> List[Tuple[str, str]]:
         return self._train_data

@@ -1,16 +1,15 @@
+import pathlib as pl
 from typing import Tuple, List
 
+import pandas as pd
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.optimizers import Adam, Optimizer
 
-from sem_seg.data.data_source import DataSource, KittiDataSource, CityscapesDataSource
+from sem_seg.data.data_source import DataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
 from sem_seg.models.deeplabv3plus import Deeplabv3
 from sem_seg.models.losses import categorical_crossentropy_with_logits
-from sem_seg.utils.paths import KITTI_BASE_DIR, MODELS_DIR, CITYSCAPES_BASE_DIR
-
-import pathlib as pl
-import pandas as pd
+from sem_seg.utils.paths import MODELS_DIR, CITYSCAPES_BASE_DIR
 
 if __name__ == '__main__':
     labels = [0,  # UNLABELLED
