@@ -27,7 +27,7 @@ parser.add_argument('--dataset', type=str, default='cityscapes', nargs='+', help
 parser.add_argument('--limit', type=int, nargs='?', default=None,
                     help='Whether data-sources should limit the files produced(Useful during testing)')
 parser.add_argument('--optim', type=str, default='sgd',
-                    help='Optimizier: adam or sgd')
+                    help='Optimizer: adam or sgd')
 parser.add_argument('--save_over', action='store_true', default=False,
                     help='When input, model is overwritten')
 parser.add_argument('--save_dir', type=str, required=True,
@@ -75,7 +75,7 @@ validation_generator = DataGenerator(data_sources=data_sources, phase='val', tar
 # CREATE UNET
 model = unet(input_size=input_size, num_classes=len(CityscapesLabels.ALL))
 loss = 'categorical_crossentropy'
-optimizers: Dict[str: Optimizer] = {'adam': Adam(lr=1e-4, epsilon=1e-8, decay=1e-6),
+optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=1e-4, epsilon=1e-8, decay=1e-6),
                                     'sgd': SGD(lr=1e-4, momentum=0.9, decay=1e-6)}
 optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']
