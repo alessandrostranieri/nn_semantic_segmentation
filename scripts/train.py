@@ -65,10 +65,12 @@ for data_source in datasets:
     data_sources.append(data_sources_dict[data_source])
 train_generator = DataGenerator(data_sources=data_sources, phase='train', target_size=image_size,
                                 batch_size=batch_size,
-                                active_labels=CityscapesLabels.ALL)
+                                active_labels=CityscapesLabels.ALL,
+                                random_seed=random_seed)
 validation_generator = DataGenerator(data_sources=data_sources, phase='val', target_size=image_size,
                                      batch_size=batch_size,
-                                     active_labels=CityscapesLabels.ALL)
+                                     active_labels=CityscapesLabels.ALL,
+                                     random_seed=random_seed)
 
 # CREATE UNET
 model = unet(input_size=input_size, num_classes=len(CityscapesLabels.ALL))
