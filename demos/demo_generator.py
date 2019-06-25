@@ -7,22 +7,19 @@ from PIL import Image
 
 from sem_seg.data.data_source import DataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import merge_label_images, Resize
-from sem_seg.utils.labels import generate_semantic_rgb
+from sem_seg.data.transformations import merge_label_images, Resize, Crop
+from sem_seg.utils.labels import generate_semantic_rgb, CityscapesLabels
 from sem_seg.utils.paths import CITYSCAPES_BASE_DIR
 
 if __name__ == '__main__':
 
-    labels = [0,  # UNLABELLED
-              7,  # ROAD
-              21,  # VEGETATION
-              24,  # PERSON
-              26]  # CAR
+    labels = CityscapesLabels.ALL
 
     # CREATE GENERATOR
     data_sources: List[DataSource] = [CityscapesDataSource(CITYSCAPES_BASE_DIR)]
     training_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                       phase='train',
+                                                      transformation=Crop((256, 256)),
                                                       batch_size=4,
                                                       target_size=(256, 256),
                                                       active_labels=labels)
@@ -36,7 +33,7 @@ if __name__ == '__main__':
     i, m = training_generator[0]
     expected_shape_x: Tuple[int, int, int, int] = (4, 256, 256, 3)
     assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
-    expected_shape_y: Tuple[int, int, int, int] = (4, 256, 256, 5)
+    expected_shape_y: Tuple[int, int, int, int] = (4, 256, 256, len(labels))
     assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
 
     # CHECK THE LOOPING THROUGH WORKS
@@ -50,6 +47,7 @@ if __name__ == '__main__':
     validation_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                         phase='val',
                                                         batch_size=4,
+                                                        transformation=Crop((256, 256)),
                                                         target_size=(256, 256),
                                                         active_labels=labels)
     print(f'Number of validation batches: {len(validation_generator)}')
@@ -69,7 +67,7 @@ if __name__ == '__main__':
     val_image_batch, val_labels_batch = validation_generator[0]
 
     # GET SINGLE IMAGES FROM BATCH
-    val_image = val_image_batch[0]
+    val_image = val_image_batch[0] * 255
     val_image = val_image.astype(np.uint8)
     val_labels = val_labels_batch[0]
     val_labels = val_labels.astype(np.uint8)

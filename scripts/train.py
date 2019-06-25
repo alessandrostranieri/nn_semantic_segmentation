@@ -12,6 +12,7 @@ from keras.optimizers import Optimizer, Adam, SGD
 
 from sem_seg.data.data_source import DataSource, KittiDataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
+from sem_seg.data.transformations import Crop
 from sem_seg.models.unet import unet
 from sem_seg.utils.labels import CityscapesLabels, generate_semantic_rgb
 from sem_seg.utils.paths import KITTI_BASE_DIR, CITYSCAPES_BASE_DIR, MODELS_DIR
@@ -63,11 +64,17 @@ data_sources_dict = {'kitti': KittiDataSource(KITTI_BASE_DIR, limit=limit),
 data_sources: List[DataSource] = []
 for data_source in datasets:
     data_sources.append(data_sources_dict[data_source])
-train_generator = DataGenerator(data_sources=data_sources, phase='train', target_size=image_size,
+train_generator = DataGenerator(data_sources=data_sources,
+                                phase='train',
+                                transformation=Crop(image_size),
+                                target_size=image_size,
                                 batch_size=batch_size,
                                 active_labels=CityscapesLabels.ALL,
                                 random_seed=random_seed)
-validation_generator = DataGenerator(data_sources=data_sources, phase='val', target_size=image_size,
+validation_generator = DataGenerator(data_sources=data_sources,
+                                     phase='val',
+                                     transformation=Crop(image_size),
+                                     target_size=image_size,
                                      batch_size=batch_size,
                                      active_labels=CityscapesLabels.ALL,
                                      random_seed=random_seed)
@@ -75,7 +82,7 @@ validation_generator = DataGenerator(data_sources=data_sources, phase='val', tar
 # CREATE UNET
 model = unet(input_size=input_size, num_classes=len(CityscapesLabels.ALL))
 loss = 'categorical_crossentropy'
-optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=1e-4),
+optimizers: Dict[str, Optimizer] = {'adam': Adam(),
                                     'sgd': SGD(lr=1e-4)}
 optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']

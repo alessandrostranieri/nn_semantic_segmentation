@@ -22,6 +22,25 @@ class Resize(ImageTransformation):
         return input_image.resize(size=self.target_size)
 
 
+class Crop(ImageTransformation):
+
+    def __init__(self, target_size: Tuple[int, int]) -> None:
+        super().__init__()
+
+        self.new_width = target_size[0]
+        self.new_height = target_size[1]
+
+    def __call__(self, input_image: Image.Image) -> Image.Image:
+
+        old_width, old_height = input_image.size
+        left = (old_width - self.new_width) / 2
+        top = (old_height - self.new_height) / 2
+        right = (old_width + self.new_width) / 2
+        bottom = (old_height + self.new_height) / 2
+
+        return input_image.crop((left, top, right, bottom))
+
+
 def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
     assert label_image.ndim == 2, 'Input image must be single channel'
 

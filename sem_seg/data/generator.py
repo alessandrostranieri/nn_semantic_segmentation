@@ -14,6 +14,7 @@ class DataGenerator(Sequence):
     def __init__(self,
                  data_sources: List[DataSource],
                  phase: str,
+                 transformation: ImageTransformation,
                  target_size: Tuple[int, int],
                  batch_size: int = 32,
                  active_labels: List[int] = None,
@@ -29,7 +30,7 @@ class DataGenerator(Sequence):
         self.target_size = target_size[0], target_size[1]
         self.batch_size = batch_size
         self.classes = [1] if not active_labels else active_labels
-        self.transformation: ImageTransformation = Resize(self.target_size)
+        self.transformation: ImageTransformation = transformation
 
         self.file_paths: List[Tuple[str, str]] = []
         for index, source in enumerate(self.data_sources):
