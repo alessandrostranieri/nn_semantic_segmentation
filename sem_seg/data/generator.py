@@ -60,7 +60,7 @@ class DataGenerator(Sequence):
             image, mask = instance
 
             transformed_image: Image.Image = self.transformation(image)
-            image_array: np.ndarray = np.array(transformed_image)
+            image_array: np.ndarray = np.array(transformed_image) / 255
             batch_images[idx] = image_array
 
             transformed_mask: Image.Image = self.transformation(mask)
