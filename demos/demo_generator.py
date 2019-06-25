@@ -30,7 +30,8 @@ if __name__ == '__main__':
     print(f'Number of training batches: {generator_len}')
 
     # GET FIRST BATCH AND CHECK THAT DIMENSIONS MATCH
-    i, m = training_generator[0]
+    i, m, sw = training_generator[0]
+    m = m['cityscapes']
     expected_shape_x: Tuple[int, int, int, int] = (4, 256, 256, 3)
     assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
     expected_shape_y: Tuple[int, int, int, int] = (4, 256, 256, len(labels))
@@ -58,13 +59,13 @@ if __name__ == '__main__':
         assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
 
     # GENERATOR ORIGINAL IMAGES
-    val_original_image, val_original_labels = validation_generator.get_batch(0)[0]
+    val_original_image, val_original_labels, val_original_idx = validation_generator.get_batch(0)[0]
     val_original_image_array: np.ndarray = np.array(val_original_image)
     val_original_labels: np.ndarray = np.array(val_original_labels)
     val_original_label_rgb: np.ndarray = generate_semantic_rgb(val_original_labels)
 
     # GENERATOR PRE-PROCESSED IMAGES
-    val_image_batch, val_labels_batch = validation_generator[0]
+    val_image_batch, val_labels_batch, _ = validation_generator[0]
 
     # GET SINGLE IMAGES FROM BATCH
     val_image = val_image_batch[0] * 255

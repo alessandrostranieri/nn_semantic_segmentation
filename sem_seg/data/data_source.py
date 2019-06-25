@@ -29,6 +29,9 @@ class DataSource:
     def get_val_data(self) -> List[Tuple[str, str]]:
         return self._val_data
 
+    def get_name(self) -> str:
+        raise NotImplementedError
+
 
 class KittiDataSource(DataSource):
 
@@ -64,11 +67,8 @@ class KittiDataSource(DataSource):
         for image_name in x_val:
             self._val_data.append((str(original_image_dir / image_name), str(original_label_dir / image_name)))
 
-    def get_train_data(self) -> List[Tuple[str, str]]:
-        return self._train_data
-
-    def get_val_data(self) -> List[Tuple[str, str]]:
-        return self._val_data
+    def get_name(self) -> str:
+        return 'kitti'
 
 
 class CityscapesDataSource(DataSource):
@@ -108,8 +108,5 @@ class CityscapesDataSource(DataSource):
         self._val_data: List[Tuple[str, str]] = [(i, l) for i, l in
                                                  zip(camera_images_val_names, label_images_val_names)]
 
-    def get_train_data(self) -> List[Tuple[str, str]]:
-        return self._train_data
-
-    def get_val_data(self) -> List[Tuple[str, str]]:
-        return self._val_data
+    def get_name(self) -> str:
+        return 'cityscapes'

@@ -92,6 +92,28 @@ def test_generator_combine_data_sources():
     assert len(val_data_generator) == 135
 
 
+def test_generator_combine_data_sources_returns_sample_weight():
+    kitti_data_source: KittiDataSource = KittiDataSource(KITTI_BASE_DIR)
+    cityscapes_data_source: CityscapesDataSource = CityscapesDataSource(CITYSCAPES_BASE_DIR)
+    data_sources: List[DataSource] = [kitti_data_source, cityscapes_data_source]
+
+    data_generator: DataGenerator = DataGenerator(data_sources=data_sources,
+                                                  phase='train',
+                                                  batch_size=4,
+                                                  transformation=Crop((256, 256)),
+                                                  target_size=(256, 256),
+                                                  active_labels=[0, 1],
+                                                  random_seed=42)
+
+    original_batch = data_generator.get_batch(0)
+    original_batch_index = original_batch[0][2]
+    assert original_batch_index == 1
+
+    input_batch = data_generator[0]
+    input_indexes = input_batch[2]
+    assert np.equal(input_indexes, np.array([[0, 1], [0, 1], [0, 1], [0, 1]])).all()
+
+
 def test_label_integrity():
     """
     Check that the resized version of the original labels can be reconstructed from the matrix which will be the
@@ -107,7 +129,7 @@ def test_label_integrity():
                                                         active_labels=[0, 1],
                                                         random_seed=42)
 
-    original_image, original_labels = train_data_generator.get_batch(0)[0]
+    original_image, original_labels, _ = train_data_generator.get_batch(0)[0]
     resized_original = Resize((256, 256))(original_labels)
     resized_original_array = np.array(resized_original)
 
@@ -127,11 +149,12 @@ def test_argmax_on_split_images():
                                                         active_labels=CityscapesLabels.ALL,
                                                         random_seed=42)
 
-    original_image, original_labels = train_data_generator.get_batch(0)[0]
+    original_image, original_labels, _ = train_data_generator.get_batch(0)[0]
     resized_original_labels = Resize((256, 256))(original_labels)
     resized_original_labels_np = np.array(resized_original_labels)
 
-    input_image, input_labels = train_data_generator[0]
+    input_image, input_labels, _ = train_data_generator[0]
+    input_labels = input_labels['cityscapes']
     input_labels = input_labels[0]
     input_labels_merged = np.argmax(input_labels, axis=-1)
 

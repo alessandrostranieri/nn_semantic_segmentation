@@ -34,9 +34,9 @@ if __name__ == '__main__':
                                                         transformation=Crop(image_shape),
                                                         batch_size=1,
                                                         active_labels=labels)
-    input_images, input_labels = validation_generator[0]
+    input_images, input_labels, _ = validation_generator[0]
     original_batch = validation_generator.get_batch(0)
-    original_image, original_labels = original_batch[0]
+    original_image, original_labels, _ = original_batch[0]
     original_size: Tuple[int, int] = original_image.size
 
     # GENERATE A PREDICTION

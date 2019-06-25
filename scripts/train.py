@@ -80,13 +80,18 @@ validation_generator = DataGenerator(data_sources=data_sources,
                                      random_seed=random_seed)
 
 # CREATE UNET
-model = unet(input_size=input_size, num_classes=len(CityscapesLabels.ALL))
-loss = 'categorical_crossentropy'
-optimizers: Dict[str, Optimizer] = {'adam': Adam(),
+class_layouts: Dict[str, List[int]] = dict()
+for ds in datasets:
+    class_layouts[ds] = CityscapesLabels.ALL
+model = unet(input_size=input_size, class_layouts=class_layouts)
+losses: Dict[str, str] = dict()
+for ds in datasets:
+    losses[ds] = 'categorical_crossentropy'
+optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=7e-4, epsilon=1e-8, decay=1e-6),
                                     'sgd': SGD(lr=1e-4)}
 optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']
-model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+model.compile(optimizer=optimizer, loss=losses, metrics=metrics)
 model.summary()
 
 # TRAIN MODEL
@@ -108,11 +113,15 @@ history_df.to_csv(save_full_path / 'history.csv')
 loaded_model: Model = load_model(str(save_full_path / 'model.h5'))
 
 # PREDICT
-predicted_batch = loaded_model.predict(validation_generator[0][0])
-predicted_single = predicted_batch[0]
+prediction_outputs = loaded_model.predict(validation_generator[0][0])
+if not isinstance(prediction_outputs, list):
+    prediction_outputs = [prediction_outputs]
 
 # SAVE FOR INSPECTION
-predicted_semantic = np.argmax(predicted_single, axis=-1)
-predicted_semantic_rgb = generate_semantic_rgb(predicted_semantic)
-predicted_pil: Image.Image = Image.fromarray(predicted_semantic_rgb)
-predicted_pil.save(str(save_full_path / 'predicted.png'))
+for idx, prediction_output in enumerate(prediction_outputs):
+    # FIRST OF THE BATCH
+    predicted_single = prediction_output[0]
+    predicted_semantic = np.argmax(predicted_single, axis=-1)
+    predicted_semantic_rgb = generate_semantic_rgb(predicted_semantic)
+    predicted_pil: Image.Image = Image.fromarray(predicted_semantic_rgb)
+    predicted_pil.save(str(save_full_path / f'predicted{idx}.png'))

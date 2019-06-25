@@ -1,10 +1,10 @@
-from typing import Tuple
+from typing import Tuple, List, Dict
 
 from keras import Model, Input
 from keras.layers import Conv2D, MaxPooling2D, Dropout, UpSampling2D, concatenate
 
 
-def unet(input_size: Tuple[int, int, int], num_classes: int = 1) -> Model:
+def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) -> Model:
     input_layer = Input(input_size)
 
     conv1 = Conv2D(filters=64, kernel_size=3, activation='relu',
@@ -78,8 +78,12 @@ def unet(input_size: Tuple[int, int, int], num_classes: int = 1) -> Model:
     conv9 = Conv2D(filters=2, kernel_size=3, activation='relu',
                    padding='same', kernel_initializer='he_normal')(conv9)
 
-    conv10 = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid')(conv9)
+    outputs: List[Conv2D] = []
+    for k, v in class_layouts.items():
+        num_classes = len(v)
+        output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid', name=k)(conv9)
+        outputs.append(output_conv)
 
-    model = Model(inputs=input_layer, outputs=conv10)
+    model = Model(inputs=input_layer, outputs=outputs)
 
     return model
