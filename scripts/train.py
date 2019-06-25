@@ -1,16 +1,14 @@
-from argparse import ArgumentParser
-
-# PARSE ARGUMENTS
-from typing import Tuple, List
-
 import pathlib as pl
-import pandas as pd
+from argparse import ArgumentParser
+from typing import Tuple, List, Dict
+
 import numpy as np
+import pandas as pd
 from PIL import Image
 from keras import Model
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.engine.saving import load_model
-from keras.optimizers import Optimizer, Adam
+from keras.optimizers import Optimizer, Adam, SGD
 
 from sem_seg.data.data_source import DataSource, KittiDataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
@@ -18,6 +16,7 @@ from sem_seg.models.unet import unet
 from sem_seg.utils.labels import CityscapesLabels, generate_semantic_rgb
 from sem_seg.utils.paths import KITTI_BASE_DIR, CITYSCAPES_BASE_DIR, MODELS_DIR
 
+# PARSE ARGUMENTS
 parser: ArgumentParser = ArgumentParser(description='Train Script')
 parser.add_argument('--batch_size', type=int, default=4, help='Batch size')
 parser.add_argument('--patience', type=int, default=10, help='Early Stopping Patience')
@@ -27,6 +26,10 @@ parser.add_argument('--random_seed', type=int, default=42, help='Seed for data g
 parser.add_argument('--dataset', type=str, default='cityscapes', nargs='+', help='Datasets to use as source')
 parser.add_argument('--limit', type=int, nargs='?', default=None,
                     help='Whether data-sources should limit the files produced(Useful during testing)')
+parser.add_argument('--optim', type=str, default='sgd',
+                    help='Optimizier: adam or sgd')
+parser.add_argument('--save_over', action='store_true', default=False,
+                    help='When input, model is overwritten')
 parser.add_argument('--save_dir', type=str, required=True,
                     help='Folder inside the model directory where to save')
 
@@ -45,19 +48,21 @@ random_seed: int = args.random_seed
 datasets: List[str] = args.dataset
 limit: int = args.limit
 save_dir: str = args.save_dir
+save_over: bool = args.save_over
+optim: str = args.optim
 
 # CHECKS
 save_full_path: pl.Path = MODELS_DIR / save_dir
-assert not save_full_path.exists(), f'{save_full_path} already exists. Please delete it or choose another directory'
-save_full_path.mkdir()
+if not save_over:
+    assert not save_full_path.exists(), f'{save_full_path} already exists. Please delete it or choose another directory'
+save_full_path.mkdir(exist_ok=True)
 
+# CREATE DATA GENERATOR
 data_sources_dict = {'kitti': KittiDataSource(KITTI_BASE_DIR, limit=limit),
                      'cityscapes': CityscapesDataSource(CITYSCAPES_BASE_DIR, limit=limit)}
 data_sources: List[DataSource] = []
 for data_source in datasets:
     data_sources.append(data_sources_dict[data_source])
-
-# CREATE DATA GENERATOR
 train_generator = DataGenerator(data_sources=data_sources, phase='train', target_size=image_size,
                                 batch_size=batch_size,
                                 active_labels=CityscapesLabels.ALL)
@@ -68,7 +73,9 @@ validation_generator = DataGenerator(data_sources=data_sources, phase='val', tar
 # CREATE UNET
 model = unet(input_size=input_size, num_classes=len(CityscapesLabels.ALL))
 loss = 'categorical_crossentropy'
-optimizer: Optimizer = Adam(lr=7e-4, epsilon=1e-8, decay=1e-6)
+optimizers: Dict[str: Optimizer] = {'adam': Adam(lr=1e-4, epsilon=1e-8, decay=1e-6),
+                                    'sgd': SGD(lr=1e-4, momentum=0.9, decay=1e-6)}
+optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']
 model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 model.summary()

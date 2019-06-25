@@ -112,3 +112,23 @@ def test_label_integrity():
     resized_merged = merge_label_images(resized_split, CityscapesLabels.ALL)
 
     assert (resized_original_array == resized_merged).all()
+
+
+def test_argmax_on_split_images():
+    kitti_data_source: KittiDataSource = KittiDataSource(KITTI_BASE_DIR)
+    train_data_generator: DataGenerator = DataGenerator(data_sources=[kitti_data_source],
+                                                        phase='train',
+                                                        batch_size=4,
+                                                        target_size=(256, 256),
+                                                        active_labels=CityscapesLabels.ALL,
+                                                        random_seed=42)
+
+    original_image, original_labels = train_data_generator.get_batch(0)[0]
+    resized_original_labels = Resize((256, 256))(original_labels)
+    resized_original_labels_np = np.array(resized_original_labels)
+
+    input_image, input_labels = train_data_generator[0]
+    input_labels = input_labels[0]
+    input_labels_merged = np.argmax(input_labels, axis=-1)
+
+    assert (input_labels_merged == resized_original_labels_np).all()
