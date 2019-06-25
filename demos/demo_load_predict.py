@@ -5,8 +5,9 @@ import numpy as np
 
 from sem_seg.data.data_source import KittiDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
+from sem_seg.data.transformations import merge_label_images, Crop
 from sem_seg.models.deeplabv3plus import Deeplabv3
-from sem_seg.utils.labels import generate_semantic_rgb, resize_and_crop, merge_label_images
+from sem_seg.utils.labels import generate_semantic_rgb, resize_and_crop
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR
 
 if __name__ == '__main__':
@@ -30,6 +31,7 @@ if __name__ == '__main__':
     validation_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                         phase='val',
                                                         target_size=image_shape,
+                                                        transformation=Crop(image_shape),
                                                         batch_size=1,
                                                         active_labels=labels)
     input_images, input_labels = validation_generator[0]

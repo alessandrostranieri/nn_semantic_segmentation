@@ -3,7 +3,7 @@ from typing import List
 
 from sem_seg.data.data_source import KittiDataSource, CityscapesDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import Resize, split_label_image, merge_label_images
+from sem_seg.data.transformations import Resize, split_label_image, merge_label_images, Crop
 from sem_seg.utils.labels import CityscapesLabels
 from sem_seg.utils.paths import KITTI_BASE_DIR, CITYSCAPES_BASE_DIR
 import pathlib as pl
@@ -74,6 +74,7 @@ def test_generator_combine_data_sources():
     train_data_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                         phase='train',
                                                         batch_size=4,
+                                                        transformation=Crop((256, 256)),
                                                         target_size=(256, 256),
                                                         active_labels=[0, 1],
                                                         random_seed=42)
@@ -83,6 +84,7 @@ def test_generator_combine_data_sources():
     val_data_generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                                       phase='val',
                                                       batch_size=4,
+                                                      transformation=Crop((256, 256)),
                                                       target_size=(256, 256),
                                                       active_labels=[0, 1],
                                                       random_seed=42)
@@ -100,6 +102,7 @@ def test_label_integrity():
     train_data_generator: DataGenerator = DataGenerator(data_sources=[kitti_data_source],
                                                         phase='train',
                                                         batch_size=4,
+                                                        transformation=Crop((256, 256)),
                                                         target_size=(256, 256),
                                                         active_labels=[0, 1],
                                                         random_seed=42)
@@ -119,6 +122,7 @@ def test_argmax_on_split_images():
     train_data_generator: DataGenerator = DataGenerator(data_sources=[kitti_data_source],
                                                         phase='train',
                                                         batch_size=4,
+                                                        transformation=Crop((256, 256)),
                                                         target_size=(256, 256),
                                                         active_labels=CityscapesLabels.ALL,
                                                         random_seed=42)

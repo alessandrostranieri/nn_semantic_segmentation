@@ -7,6 +7,7 @@ from keras.optimizers import Adam, Optimizer
 
 from sem_seg.data.data_source import DataSource, KittiDataSource
 from sem_seg.data.generator import DataGenerator
+from sem_seg.data.transformations import Crop
 from sem_seg.models.deeplabv3plus import Deeplabv3
 from sem_seg.models.losses import categorical_crossentropy_with_logits
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR
@@ -35,9 +36,11 @@ if __name__ == '__main__':
     data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR, limit=4)]
     train_generator = DataGenerator(data_sources=data_sources, phase='train', target_size=image_shape,
                                     batch_size=batch_size,
+                                    transformation=Crop(image_shape),
                                     active_labels=labels)
     validation_generator = DataGenerator(data_sources=data_sources, phase='val', target_size=image_shape,
                                          batch_size=batch_size,
+                                         transformation=Crop(image_shape),
                                          active_labels=labels)
 
     model_path: pl.Path = MODELS_DIR / 'demo' / 'model_weights.h5'

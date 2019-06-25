@@ -6,7 +6,7 @@ from keras.utils import Sequence
 from sklearn.utils import shuffle
 
 from sem_seg.data.data_source import DataSource
-from sem_seg.data.transformations import split_label_image, Resize, ImageTransformation
+from sem_seg.data.transformations import split_label_image, ImageTransformation
 
 
 class DataGenerator(Sequence):
@@ -21,7 +21,6 @@ class DataGenerator(Sequence):
                  random_seed: int = 42) -> None:
         """
         Constructor
-        :param image_dir: Main data-set directory
         :param batch_size:
         """
         super().__init__()

@@ -7,6 +7,7 @@ from keras.optimizers import Optimizer, Adam
 
 from sem_seg.data.data_source import DataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
+from sem_seg.data.transformations import Crop
 from sem_seg.models.unet import unet
 from sem_seg.utils.labels import CityscapesLabels, generate_semantic_rgb
 from sem_seg.utils.paths import CITYSCAPES_BASE_DIR, MODELS_DIR
@@ -18,7 +19,6 @@ import numpy as np
 from PIL import Image
 
 if __name__ == '__main__':
-
     # PARAMETERS
     image_size: Tuple[int, int] = (128, 128)
     input_size: Tuple[int, int, int] = image_size + (3,)
@@ -30,9 +30,11 @@ if __name__ == '__main__':
     data_sources: List[DataSource] = [CityscapesDataSource(CITYSCAPES_BASE_DIR, limit=4)]
     train_generator = DataGenerator(data_sources=data_sources, phase='train', target_size=image_size,
                                     batch_size=batch_size,
+                                    transformation=Crop(image_size),
                                     active_labels=CityscapesLabels.ALL)
     validation_generator = DataGenerator(data_sources=data_sources, phase='val', target_size=image_size,
                                          batch_size=batch_size,
+                                         transformation=Crop(image_size),
                                          active_labels=CityscapesLabels.ALL)
 
     # CREATE UNET

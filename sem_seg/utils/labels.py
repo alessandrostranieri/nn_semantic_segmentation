@@ -7,11 +7,11 @@ from PIL import Image, ImageOps
 class Label:
     """Represents a segmentation label."""
 
-    def __init__(self, name: str, id: int, color: Tuple[int, int, int]) -> None:
+    def __init__(self, name: str, label_id: int, color: Tuple[int, int, int]) -> None:
         super().__init__()
 
         self.name = name
-        self.id = id
+        self.label_id = label_id
         self.color = color
 
 
@@ -77,7 +77,7 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
     label_rgb_image: np.ndarray = np.zeros((input_shape[0], input_shape[1], 3), dtype=np.uint8)
 
     for label in segmentation_labels:
-        label_id: int = label.id
+        label_id: int = label.label_id
         label_color: Tuple[int, int, int] = label.color
 
         # GET MASK
