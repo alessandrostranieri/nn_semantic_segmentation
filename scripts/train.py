@@ -75,8 +75,8 @@ validation_generator = DataGenerator(data_sources=data_sources, phase='val', tar
 # CREATE UNET
 model = unet(input_size=input_size, num_classes=len(CityscapesLabels.ALL))
 loss = 'categorical_crossentropy'
-optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=1e-4, epsilon=1e-8, decay=1e-6),
-                                    'sgd': SGD(lr=1e-4, momentum=0.9, decay=1e-6)}
+optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=1e-4),
+                                    'sgd': SGD(lr=1e-4)}
 optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']
 model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
