@@ -64,7 +64,43 @@ After having understood the context of this project, the next necessary step con
 
 Different data-sets employ different labelling schemes. For simplicity, in this context we decided to work with only the **KITTI** and **Cityscapes** datasets, which use the same labelling scheme. The images provide labels for 33 (34 with 0-label segments) classes, listed in the following table.
 
-
+| ID | Label                |
+|----|----------------------|
+| -1 | license plate        |
+| 0  | unlabeled            |
+| 1  | ego vehicle          |
+| 2  | rectification border |
+| 3  | out of roi           |
+| 4  | static               |
+| 5  | dynamic              |
+| 6  | ground               |
+| 7  | road                 |
+| 8  | sidewalk             |
+| 9  | parking              |
+| 10 | rail track           |
+| 11 | building             |
+| 12 | wall                 |
+| 13 | fence                |
+| 14 | guard rail           |
+| 15 | bridge               |
+| 16 | tunnel               |
+| 17 | pole                 |
+| 18 | polegroup            |
+| 19 | traffic light        |
+| 20 | traffic sign         |
+| 21 | vegetation           |
+| 22 | terrain              |
+| 23 | sky                  |
+| 24 | person               |
+| 25 | rider                |
+| 26 | car                  |
+| 27 | truck                |
+| 28 | bus                  |
+| 29 | caravan              |
+| 30 | trailer              |
+| 31 | train                |
+| 32 | motorcycle           |
+| 33 | bicycle              |
 
 ### Data Generator
 
@@ -91,9 +127,9 @@ In particular we take inspiration from the code provided [here](https://github.c
 
 ## Combining the dataset
 
-### Modification of data generator
+##
 
-### Loss functions
+## Loss functions
 
 ## Experiments
 
