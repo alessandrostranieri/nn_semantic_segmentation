@@ -64,7 +64,7 @@ We are going to eventually have a model that we train in supervised fashion. Tha
 
 There are two ways in Keras to feed data during training and prediction: through the method `fit` or the method `fit_generator`. In the first method the data is expected to be already in a `numpy` array format, whereas with `fit_generator` one must provide a generator instance. In foresight of the need to combine batches of images from different sources, we opted to write a custom generator.
 
-![alt text](/images/DataGenerator_01.png "Data Generator Diagram")
+![alt text](./images/DataGenerator_01.png "Data Generator Diagram")
 
 ## Model
 
