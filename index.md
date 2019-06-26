@@ -20,6 +20,13 @@ In this project we deal with the problem of semantic segmentation. Our aim is to
 architecture in order to leverage multiple data-sets. Before we delve into the description of how the project was carried out, let's provide some context.
 In the the nest sub-sections we will give an overview of what is semantic segmentation, some of the current result and we provide a motivation for the project.
 
+The model, training and validation steps have been implemented using the [Keras](https://keras.io/) library. Other notable libraries include:
+
+* numpy
+* Pillow
+* pandas
+* matplotlib
+
 ## Semantic Segmentation
 
 Semantic Segmentation denotes a class of computer vision problems, whose aim is to divide the region of an image into distinct
@@ -33,6 +40,10 @@ In **instance** segmentation a position in the image will actually carry to piec
 that if the image shows two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. If the algorithm worked well of course. :)
 
 ## How is it used?
+
+Semantic Segmentation can be considered as a step towards automatized scene understanding. In image classification problems, the objective is to assign a label to an image, which state what is the pictured object. Such system could, for example, return the bounding box of the object in the picture. In segmentation we move a little further, in the sense that we want to indicate at pixel level what is the object.
+
+This consideration can help understand the importance of this problem. Semantic segmentation can be used for autonomous driving, and also more important application like landscape understanding and medical image analysis. 
 
 ## Objective of the project
 
@@ -64,10 +75,36 @@ We are going to eventually have a model that we train in supervised fashion. Tha
 
 There are two ways in Keras to feed data during training and prediction: through the method `fit` or the method `fit_generator`. In the first method the data is expected to be already in a `numpy` array format, whereas with `fit_generator` one must provide a generator instance. In foresight of the need to combine batches of images from different sources, we opted to write a custom generator.
 
-![alt text](images/DataGenerator_01.png "Data Generator Diagram")
+|![alt text](images/DataGenerator_01.png "Data Generator Diagram")|
+|:--:| 
+| *Caption* |
 
 ## Model
+
+Our initial approach was to use an implementation of the DeepLab library. DeepLab is a deep architecture that makes use of CRFs and atrous convolution. WHAT ARE CRF and ATROUS. According to [2](#references) it provides the best accuracy on several image data-sets, compare to other architectures. Unfortunately, the model we tried to use did not show any sign of learning. In two epochs the model would reach the best, despite poor, loss value and stop improving on validation loss.
+
+In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. This network was designed by t
+It consists of a contracting path (left side) and an expansive path (right side). U-Nat was designed to work well will small data-sets. 
+
+In particular we take inspiration from the code provided [here](https://github.com/zhixuhao/unet/blob/master/model.py). The model is fairly simple and it's easy to verify the correctness by simply following the network's diagram.
+
+|![unet](images/U-Net_Image.png "U-Net Diagram")|
+|:--:|
+| U-Net diagram, as presented in the original paper [3](#references) |
+
+## Combining the dataset
+
+### Modification of data generator
+
+### Loss functions
 
 ## Experiments
 
 ## Conclusions
+
+## References
+
+1. [DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs](https://arxiv.org/abs/1606.00915)
+2. [A Review on Deep Learning Techniques Applied to Semantic Segmentation](https://arxiv.org/abs/1704.06857)
+3. [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
+
