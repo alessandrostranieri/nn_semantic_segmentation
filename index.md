@@ -16,9 +16,7 @@ layout: default
 
 ## Introduction
 
-In this project we deal with the problem of semantic segmentation. Our aim is to devise modify a semantic segmentation
-architecture in order to leverage multiple data-sets. Before we delve into the description of how the project was carried out, let's provide some context.
-In the the nest sub-sections we will give an overview of what is semantic segmentation, some of the current result and we provide a motivation for the project.
+In this project we deal with the problem of semantic segmentation. Our aim is to devise a semantic segmentation architecture in order to leverage multiple data-sets. Before we delve into the description of how the project was carried out, let's provide some context. In the the nest sub-sections we will give an overview of what is semantic segmentation, some of the current result and we provide a motivation for the project.
 
 The model, training and validation steps have been implemented using the [Keras](https://keras.io/) library. Other notable libraries include:
 
@@ -32,42 +30,41 @@ The model, training and validation steps have been implemented using the [Keras]
 Semantic Segmentation denotes a class of computer vision problems, whose aim is to divide the region of an image into distinct
 sub-areas. What this effectively translates to, is into labeling each individual pixel in the image, where the label carries a specific information.
 
-In the type of information carried by the label, lies the difference between two types of semantic segmentation: **pixel-wise** and **instance**.
+In the type of information carried by the label lies the difference between two types of semantic segmentation: **pixel-wise** and **instance**.
 
 In **pixel-wise** segmentation each pixel is assigned to a single class. This means that an algorithm will typically output an image of the same size, where each pixel value is the label corresponding to a class. For example 1 could be assigned to the class CAR and and 2 to the class PERSON.
 
 In **instance** segmentation a position in the image will actually carry to pieces of information: The type of the segmented object and a single identifier for that object. This means
-that if the image shows two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. If the algorithm worked well of course. :)
+that if the image shows two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. If the algorithm worked well of course.
 
-## How is it used?
+The following pictures are an example of an camera image, a real semantic segmentation image and a colorized semantic segmentation image.
 
-Semantic Segmentation can be considered as a step towards automatized scene understanding. In image classification problems, the objective is to assign a label to an image, which state what is the pictured object. Such system could, for example, return the bounding box of the object in the picture. In segmentation we move a little further, in the sense that we want to indicate at pixel level what is the object.
+|![alt text](images/example_original_kitti.png "Original")|![alt text](images/example_semantic_kitti.png "Original")|![alt text](images/example_semantic_rgb_kitti.png "Original")|
+|:--:|:--:|:--:| 
+| *Original Image* | *Semantic* | *Sematic RGB* |
 
-This consideration can help understand the importance of this problem. Semantic segmentation can be used for autonomous driving, and also more important application like landscape understanding and medical image analysis. 
+Semantic segmentation can be considered as a step towards the general goal scene understanding. In image classification problems, the objective is to assign a label to an image, which state what is the pictured object. A more complicated problem can be classifying object and returning their bounding boxes. Semantic segmentation can be considered as a step further, where every pixel of the identified object is returned.
+
+It becomes obvious then how this problem is of importance in applications such as autonomous driving or landscape monitoring. Semantic segmentation is also used in medical imaging, where it can be used to isolate brain region, growths or cell nuclei.
 
 ## Objective of the project
 
-Manually labelling a data-set for semantic segmentation is relatively cumbersome. One consequence of that is that annotated data-sets can be quite limited in size. As we know, in order for
-a deep learning method to work, we need large amount of data. For this reason it would be an advantage to be able to leverage a combination of several data-sets. This of course comes with the complication that different data-sets are created with different image sizes and different labelling schemes.
+Producing annotated data-sets for semantic segmentation tasks is not easy. One consequence of that is that annotated data-sets can be quite limited in size. This naturally works against the large data-sets requirement of deep-learning algorithms. For this reason it would be an advantage to be able to leverage a combination of several data-sets. This of course comes with the complication that different data-sets are created with different image sizes and different labelling schemes.
 
 ## A necessary introduction: the datasets
 
-Apart from understanding the context of this project, the very first step consisted in getting acquainted with the data. For this project we gathered information about X data-sets, which we try to summarize in the following table. This is important because we need implement a way to feed images and from different sources to our model. Typically a semantic segmentation dataset comes with two main sets of data:
+After having understood the context of this project, the next necessary step consisted in getting acquainted with the data. For this project we gathered information about X data-sets, which we try to summarize in the following table. This is important because we need implement a way to feed images and from different sources to our model.
 
-* The original images, for example an RGB camera picture
-* A label image, typically in gray scale
+| Dataset    | URL                                                                                  | Size                                                                          | Info                                                                                                          |
+|------------|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| Cityscapes | [link](https://www.cityscapes-dataset.com/)                                          | 5000 Images: 3475 train/1525 test                                             | Images laid out by type, phase and city. Image names are different across types.                              |
+| KITTI      | [link](http://www.cvlibs.net/datasets/kitti/eval_semseg.php?benchmark=semantics2015) | 200 Images in total                                                           |  Simple subdivision camera and semantic                                                                       |
+| ADE20K     | [link](http://groups.csail.mit.edu/vision/datasets/ADE20K/)                          | 20.210 train images/2000 test images.                                         | The dataset includes many different types of images, so we must probably select a subset according to content |
+| COCO       | [link](http://cocodataset.org/#home)                                                 | Detection(people): 200K images. 80 categories. Stuff(grass, wall) 55K images. | Needs API to extract masks.                                                                                   |
 
-The label images are typically not very informative to the human eye
+Different data-sets employ different labelling schemes. For simplicity, in this context we decided to work with only the **KITTI** and **Cityscapes** datasets, which use the same labelling scheme. The images provide labels for 33 (34 with 0-label segments) classes, listed in the following table.
 
 
-| Dataset        | URL | Size | Info |
-|----------------|-----|------|------|
-| Cityscapes     | 0   | 0    | 0    |
-| Kitti          | 0   | 0    | 0    |
-| ADE20K         | 0   | 0    | 0    |
-| COCO           | 0   | 0    | 0    |
-| Multi-Spectral | 0   | 0    | 0    |
-| ApolloScape    | 0   | 0    | 0    |
 
 ### Data Generator
 
