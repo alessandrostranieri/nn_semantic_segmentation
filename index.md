@@ -127,7 +127,32 @@ In particular we take inspiration from the code provided [here](https://github.c
 
 ## Combining the dataset
 
-##
+At this stage we can create a **U-Net** model and feed training data. In order to use different data-sets we introduced the following modifications:
+
+1. We modified the architecture to have one output per data-set
+2. We modified the training process to include a loss function per data-set
+3. We modified the data generator to provide sample weights.
+
+Let's see these points one by one.
+
+When trained on a single data-set, the model would have a single output, which consist of a layer for each class of object detected. To leverage multiple data-sets we modify U-Net, so that it will be built with a different head for each data-set. As presented in figure. Each head will have naturally as many layers as needed for the data-set. The idea behind this is that the network will learn different representation at the final layer, but the earlier one should share the same features.
+
+The following snippet shows the little modification in the U-Net code.
+
+{% highlight python %}
+def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) -> Model:
+  input_layer = Input(input_size)
+  # LAYERS
+  outputs: List[Conv2D] = []
+    for k, v in class_layouts.items():
+        num_classes = len(v)
+        output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid', name=k)(conv9)
+        outputs.append(output_conv)
+
+    model = Model(inputs=input_layer, outputs=outputs)
+
+    return model
+{% endhighlight %}
 
 ## Loss functions
 
