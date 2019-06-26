@@ -216,6 +216,19 @@ Despite several attempts, none of the training runs produced any usable results.
 
 ## Conclusions
 
+This section gives us the opportunity to reflect on the work done and to consider where to move from there.
+
+**Things not done well**: We dived into semantic segmentation using a complex model: DeepLab. The unsuccess of this attempt caused a delay, without providing any useful lesson. Beginning with a simpler and more readable model such as U-Net would have allowed to understand better the problem. Another delay was caused by the initial difficulties in training using GPU.
+
+**Things done well**: A-part from the model chosen, the rest of the steps were done in a rational progressive way. The steps to go from data-understanding to model training were nicely sub-tasked. We also added some tests to verify some parts of the implementations and data integrity. The way that data generation utilities were designed should allow to improve and continue working on this problem.
+
+Some of the **next steps** we would take up are:
+
+* Investigate the failure in training in the experiment attempted
+* Attempt again to implement DeepLab, which should definitely allow for more accurate predictions
+* Use pre-trained weights with DeepLab
+* Add support for the other data-sets
+
 ## References
 
 1. [DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs](https://arxiv.org/abs/1606.00915)
