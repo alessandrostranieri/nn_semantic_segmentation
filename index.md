@@ -139,24 +139,80 @@ When trained on a single data-set, the model would have a single output, which c
 
 The following snippet shows the little modification in the U-Net code.
 
-{% highlight python %}
+```python
 def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) -> Model:
   input_layer = Input(input_size)
+  
   # LAYERS
+
+  # LAYERS
+
+  # LAYERS
+  
   outputs: List[Conv2D] = []
-    for k, v in class_layouts.items():
-        num_classes = len(v)
-        output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid', name=k)(conv9)
-        outputs.append(output_conv)
+  for k, v in class_layouts.items():
+      num_classes = len(v)
+      output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid', name=k)(conv9)
+      outputs.append(output_conv)
 
-    model = Model(inputs=input_layer, outputs=outputs)
+  model = Model(inputs=input_layer, outputs=outputs)
 
-    return model
-{% endhighlight %}
+  return model
+```
 
-## Loss functions
+Having multiple heads requires multiple loss function, because the differences to propagate are different. Adding multiple loss function is quite straightforward.
+
+```python
+losses: Dict[str, str] = dict()
+for ds in datasets:
+    losses[ds] = 'categorical_crossentropy'
+optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=7e-4, epsilon=1e-8, decay=1e-6),
+                                    'sgd': SGD(lr=1e-4)}
+optimizer: Optimizer = optimizers[optim]
+metrics = ['categorical_accuracy']
+model.compile(optimizer=optimizer, loss=losses, metrics=metrics)
+```
+
+The trickiest modification involved the data generator. We need a way to map a training instance to the loss function associated to the same data-set, 
+so that only that loss is propagated. This can be accomplished using sample weights during training. A sample weight is in general a vector with an element for each loss function. Each element ranges between 0 and 1, and expresses the contribution of the loss function. By using a one-hot encoding sample weight, it is possible to select exclusively one loss function per data-set. The return type of the data-generator has to change to return the input image, a dictionary with a mask for each output and a dictionary with a sample weight for each data-source.
+
+This is probably clear in the following figure.
+
+And here's is how we write the `__get_item__` method of our generator.
+
+```python
+targets: Dict[str, np.ndarray] = dict()
+  sample_weights: Dict[str, np.ndarray] = dict()
+  for idx, ds in enumerate(self.data_sources):
+    targets[ds.get_name()] = batch_masks
+    if batch_ds.ndim == 1:
+        sample_weights[ds.get_name()] = batch_ds
+    else:
+        sample_weights[ds.get_name()] = batch_ds[:, idx]
+
+return batch_images, targets, sample_weights
+```
 
 ## Experiments
+
+Our objective was to see whether using a combination of data-set would improve the prediction capabilities. We tried to conduct three different types of training:
+
+* only on the KITTI data-set
+* only on the Cityscapes data-set
+* on a combination of KITTI and Cityscapes
+
+The parameters that we settled on are the following:
+
+| Parameter               | Value   |
+|-------------------------|---------|
+| Number of epochs        | 500     |
+| Early stopping patience | 10      |
+| Batch size              | 16      |
+| Image size              | 256x256 |
+| Optimizer               | Adam    |
+| Learning Rate           | 1e-4    |
+
+Despite several attempts, none of the training runs produced any usable results. The training runs using single dataset showed very slow loss reduction. The runs using the combination of data-sets didn't not produce any error, but gave inconclusive results.
 
 ## Conclusions
 
