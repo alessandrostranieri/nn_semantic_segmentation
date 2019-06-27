@@ -5,7 +5,7 @@ layout: default
 
 ## Introduction
 
-In this project we deal with the problem of semantic segmentation. Our aim is to devise a semantic segmentation architecture in order to leverage multiple data-sets. Before we delve into the description of how the project was carried out, let's provide some context. In the the nest sub-sections we will give an overview of what is semantic segmentation, some of the current result and we provide a motivation for the project.
+In this project we deal with the problem of semantic segmentation. Our aim is to devise a semantic segmentation architecture in order to leverage multiple data-sets. Before describing how the project was carried out, let's provide some context. In the the next sub-sections we will give an overview of what is semantic segmentation, how it is used and the motivation for our project.
 
 The model, training and validation steps have been implemented using the [Keras](https://keras.io/) library. Other notable libraries include:
 
@@ -16,17 +16,13 @@ The model, training and validation steps have been implemented using the [Keras]
 
 ## Semantic Segmentation
 
-Semantic Segmentation denotes a class of computer vision problems, whose aim is to divide the region of an image into distinct
-sub-areas. What this effectively translates to, is into labeling each individual pixel in the image, where the label carries a specific information.
-
-In the type of information carried by the label lies the difference between two types of semantic segmentation: **pixel-wise** and **instance**.
+Semantic Segmentation denotes a class of computer vision problems, whose aim is to divide the region of an image into distinct sub-areas. This effectively translates into labeling each individual pixel in the image, where the label carries a specific information. In the type of information carried by the label lies the difference between two types of semantic segmentation: **pixel-wise** and **instance**.
 
 In **pixel-wise** segmentation each pixel is assigned to a single class. This means that an algorithm will typically output an image of the same size, where each pixel value is the label corresponding to a class. For example 1 could be assigned to the class CAR and and 2 to the class PERSON.
 
-In **instance** segmentation a position in the image will actually carry to pieces of information: The type of the segmented object and a single identifier for that object. This means
-that if the image shows two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. If the algorithm worked well of course.
+In **instance** segmentation a position in the image will actually carry to pieces of information: The type of the segmented object and a single identifier for that object. This means that if the image shows two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. It's fair to say that instance segmentation is harder than pixel-wise.
 
-The following pictures are an example of an camera image, a real semantic segmentation image and a colorized semantic segmentation image.
+The following pictures are an example of an camera image, a real semantic segmentation image and a colorized semantic segmentation image. The real semantic image is hardly useful to the human eye, as the tipical label values are in the lower part of a 0..255 range.
 
 |![alt text](images/example_original_kitti.png "Original")|![alt text](images/example_semantic_kitti.png "Original")|![alt text](images/example_semantic_rgb_kitti.png "Original")|
 |:--:|:--:|:--:| 
@@ -34,7 +30,7 @@ The following pictures are an example of an camera image, a real semantic segmen
 
 Semantic segmentation can be considered as a step towards the general goal scene understanding. In image classification problems, the objective is to assign a label to an image, which state what is the pictured object. A more complicated problem can be classifying object and returning their bounding boxes. Semantic segmentation can be considered as a step further, where every pixel of the identified object is returned.
 
-It becomes obvious then how this problem is of importance in applications such as autonomous driving or landscape monitoring. Semantic segmentation is also used in medical imaging, where it can be used to isolate brain region, growths or cell nuclei.
+It becomes obvious then how this problem is of importance in applications such as autonomous driving or landscape monitoring. Semantic segmentation is also used in medical imaging, where it can be used to isolate brain regions, growths or cell nuclei.
 
 ## Objective of the project
 
@@ -42,7 +38,7 @@ Producing annotated data-sets for semantic segmentation tasks is not easy. One c
 
 ## A necessary introduction: the datasets
 
-After having understood the context of this project, the next necessary step consisted in getting acquainted with the data. For this project we gathered information about X data-sets, which we try to summarize in the following table. This is important because we need implement a way to feed images and from different sources to our model.
+After having understood the context of this project, the next necessary step consisted in getting acquainted with the data. For this project we gathered information about 4 data-sets, which we try to summarize in the following table. This is important, because we need to implement a way to feed images from different sources to our model.
 
 | Dataset    | URL                                                                                  | Size                                                                          | Info                                                                                                          |
 |------------|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -51,7 +47,7 @@ After having understood the context of this project, the next necessary step con
 | ADE20K     | [link](http://groups.csail.mit.edu/vision/datasets/ADE20K/)                          | 20.210 train images/2000 test images.                                         | The dataset includes many different types of images, so we must probably select a subset according to content |
 | COCO       | [link](http://cocodataset.org/#home)                                                 | Detection(people): 200K images. 80 categories. Stuff(grass, wall) 55K images. | Needs API to extract masks.                                                                                   |
 
-Different data-sets employ different labelling schemes. For simplicity, in this context we decided to work with only the **KITTI** and **Cityscapes** datasets, which use the same labelling scheme. The images provide labels for 33 (34 with 0-label segments) classes, listed in the following table.
+AS mentioned, different data-sets employ different labelling schemes. For simplicity, in this context we decided to work with only the **KITTI** and **Cityscapes** datasets, which use the same labelling scheme. The images provide labels for 33 (34 with 0-label segments) classes, listed in the following table.
 
 | ID | Label                |
 |----|----------------------|
@@ -93,22 +89,23 @@ Different data-sets employ different labelling schemes. For simplicity, in this 
 
 ### Data Generator
 
-We are going to eventually have a model that we train in supervised fashion. That is we provide examples of input and out and the model should hopefully learn to produce accurate descriptions from new input data.
+We will train our models in a supervised learning fashion. Our camera images will be the input, where are the semantic images will be our target.
 
-There are two ways in Keras to feed data during training and prediction: through the method `fit` or the method `fit_generator`. In the first method the data is expected to be already in a `numpy` array format, whereas with `fit_generator` one must provide a generator instance. In foresight of the need to combine batches of images from different sources, we opted to write a custom generator.
+There are two ways in Keras to feed data during training and prediction: through the method `fit` or the method `fit_generator`. In the first method the data is expected to be already in a `numpy` array format. When using `fit_generator` one must provide a instance that implement the `Sequence` interface. This quite simply means that given an index, the instance will return a batch of data. Keras provides a facility to generate image pairs. However, as we foresaw the need to combine batches of images from different sources, we opted to write a custom generator, which we called `DataGenerator`.
 
 |![alt text](images/DataGenerator_01.png "Data Generator Diagram")|
 |:--:| 
-| *Caption* |
+| *Diagram of a basic DataGenerator* |
+
+In Keras, we can instruct the `fit` method to alternate training and validation steps. This means that we will typically feed it with two different DataGenerator instances: training generator and validation  generator.
 
 ## Model
 
-Our initial approach was to use an implementation of the DeepLab library. DeepLab is a deep architecture that makes use of CRFs and atrous convolution. WHAT ARE CRF and ATROUS. According to [2](#references) it provides the best accuracy on several image data-sets, compare to other architectures. Unfortunately, the model we tried to use did not show any sign of learning. In two epochs the model would reach the best, despite poor, loss value and stop improving on validation loss.
+Our initial approach was to use an implementation of the DeepLab model. In fact, according to [2](#references), it provides the best accuracy on several image data-sets, compared to other architectures. Unfortunately, the model we tried to use did not show any sign of learning. In two epochs the model would reach the best, despite poor, loss value and stop improving on validation loss. Only later we realized that DeepLab network are typically trained from pre-trained weights and we also found better implementations.
 
-In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. This network was designed by t
-It consists of a contracting path (left side) and an expansive path (right side). U-Nat was designed to work well will small data-sets. 
+In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. U-Nat was designed to work well will small data-sets, which is typically the case with biomedical image sets.  There are some aspects of this architecture that are worth mentioning. On the left we have a contracting network, and on the right a symmetrical path, where the max-pooling is replaced by up-sampling. This is done to increase the resolution. High resolution features from the contracting path are combined with the up-sampled: this is with the intent of re-integrate more local information. The **U** in the term comes from the symmetrical shape of the network. At the final layer a 1x1 convolution is used to map the last component feature vector to the desired number of classes [3](#references). The final layer would then have a 3D shape of $width \times height \times |classes|$. Along the last axis, for each pixel, we have the *softmax* encoding of the classes.
 
-In particular we take inspiration from the code provided [here](https://github.com/zhixuhao/unet/blob/master/model.py). The model is fairly simple and it's easy to verify the correctness by simply following the network's diagram.
+The model's implementation takes largely inspiration from the code provided [here](https://github.com/zhixuhao/unet/blob/master/model.py). The model is fairly simple and it's easy to verify the correctness by simply following the network's diagram.
 
 |![unet](images/U-Net_Image.png "U-Net Diagram")|
 |:--:|
