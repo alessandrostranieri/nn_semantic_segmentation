@@ -103,7 +103,11 @@ In Keras, we can instruct the `fit` method to alternate training and validation 
 
 Our initial approach was to use an implementation of the DeepLab model. In fact, according to [2](#references), it provides the best accuracy on several image data-sets, compared to other architectures. Unfortunately, the model we tried to use did not show any sign of learning. In two epochs the model would reach the best, despite poor, loss value and stop improving on validation loss. Only later we realized that DeepLab network are typically trained from pre-trained weights and we also found better implementations.
 
-In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. U-Nat was designed to work well will small data-sets, which is typically the case with biomedical image sets.  There are some aspects of this architecture that are worth mentioning. On the left we have a contracting network, and on the right a symmetrical path, where the max-pooling is replaced by up-sampling. This is done to increase the resolution. High resolution features from the contracting path are combined with the up-sampled: this is with the intent of re-integrate more local information. The **U** in the term comes from the symmetrical shape of the network. At the final layer a 1x1 convolution is used to map the last component feature vector to the desired number of classes [3](#references). The final layer would then have a 3D shape of $width \times height \times |classes|$. 
+In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. U-Nat was designed to work well will small data-sets, which is typically the case with biomedical image sets.  There are some aspects of this architecture that are worth mentioning. On the left we have a contracting network, and on the right a symmetrical path, where the max-pooling is replaced by up-sampling. This is done to increase the resolution. High resolution features from the contracting path are combined with the up-sampled: this is with the intent of re-integrate more local information. The **U** in the term comes from the symmetrical shape of the network. At the final layer a 1x1 convolution is used to map the last component feature vector to the desired number of classes [3](#references). The final layer would then have a 3D shape of $width \times height \times |classes|$. For each pixel, the last axis of the output will contain the probability of the pixel belonging to that class. The expected semantic image comes as a sparse 2D representation. This means that to compare expected and predicted image we must convert the semantic image to a 3D version where the last axis contains the one-hot encoding of the class. The following figure should clarify this.
+
+|![split](images/Input_01.png "Semantic image split")|
+|:--:|
+| Example of semantic image conversion with one-hot categories |
 
 The model's implementation takes largely inspiration from the code provided [here](https://github.com/zhixuhao/unet/blob/master/model.py). The model is fairly simple and it's easy to verify the correctness by simply following the network's diagram.
 
@@ -121,7 +125,9 @@ At this stage we can create a **U-Net** model and feed training data. In order t
 
 Let's see these points one by one.
 
-When trained on a single data-set, the model would have a single output, which consist of a layer for each class of object detected. To leverage multiple data-sets we modify U-Net, so that it will be built with a different head for each data-set. As presented in figure. Each head will have naturally as many layers as needed for the data-set. The idea behind this is that the network will learn different representation at the final layer, but the earlier one should share the same features.
+### U-Net output
+
+When trained on a single data-set, the model would have a single output, which consists of a layer for each class of object detected. To leverage multiple data-sets we modify U-Net, so that it will be built with a different head for each data-set. Each head will have naturally as many layers as needed for the data-set. The idea behind this is that the network will learn different representation at the final layer, but the earlier one should share the same features.
 
 The following snippet shows the little modification in the U-Net code.
 
@@ -145,6 +151,8 @@ def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) 
 
   return model
 ```
+
+### Multiple losses
 
 Having multiple heads requires multiple loss function, because the differences to propagate are different. Adding multiple loss function is quite straightforward.
 
