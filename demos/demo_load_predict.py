@@ -1,30 +1,25 @@
+import pathlib as pl
 from typing import Tuple, List
 
 import matplotlib.pyplot as plt
 import numpy as np
+from keras import Model
+from keras.engine.saving import load_model
 
 from sem_seg.data.data_source import KittiDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import merge_label_images, Crop
-from sem_seg.models.deeplabv3plus import Deeplabv3
-from sem_seg.utils.labels import generate_semantic_rgb, resize_and_crop
+from sem_seg.data.transformations import Crop
+from sem_seg.utils.labels import generate_semantic_rgb, CityscapesLabels
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR
 
 if __name__ == '__main__':
 
-    # PARAMETERS
-    labels = [0,  # UNLABELLED
-              7,  # ROAD
-              21,  # VEGETATION
-              24,  # PERSON
-              26]  # CAR
-
     image_shape: Tuple[int, int] = (256, 256)
     image_array_shape: Tuple[int, int, int] = image_shape + (3,)
 
-    # LOAD THE MODEL
-    model = Deeplabv3(weights=None, input_shape=image_array_shape, num_classes=len(labels), OS=8)
-    model.load_weights(str(MODELS_DIR / 'model_weights.h5'))
+    # LOAD MODEL
+    model_dir: pl.Path = MODELS_DIR / 'kitti_02'
+    model: Model = load_model(str(model_dir / 'model.h5'))
 
     # GET A VALIDATION BATCH
     data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR)]
@@ -32,51 +27,36 @@ if __name__ == '__main__':
                                                         phase='val',
                                                         target_size=image_shape,
                                                         transformation=Crop(image_shape),
-                                                        batch_size=1,
-                                                        active_labels=labels)
+                                                        batch_size=4,
+                                                        active_labels=CityscapesLabels.ALL)
     input_images, input_labels, _ = validation_generator[0]
     original_batch = validation_generator.get_batch(0)
     original_image, original_labels, _ = original_batch[0]
     original_size: Tuple[int, int] = original_image.size
 
     # GENERATE A PREDICTION
-    predicted: np.ndarray = model.predict(input_images)
+    predicted: np.ndarray = model.predict(input_images)[0]
     # CONVERT TO LABEL IMAGES
     predicted_labels: np.ndarray = np.argmax(predicted.squeeze(), -1)
-
-    # WE MAP VALUES TO THE RIGHT LABELS
-    replacements = {0: 0, 1: 7, 2: 21, 3: 24, 5: 26}
-    new_predicted: np.ndarray = np.zeros_like(predicted_labels, dtype=np.uint8)
-    for k, v in replacements.items():
-        new_predicted[predicted_labels == k] = v
 
     # VISUALIZE ORIGINAL, TARGET AND PREDICTED
     original_labels_array = np.array(original_labels)
     original_labels_rgb = generate_semantic_rgb(original_labels_array)
-    predicted_rgb = generate_semantic_rgb(new_predicted)
+    predicted_rgb = generate_semantic_rgb(predicted_labels)
 
     # PLOT IMAGES
-    fig, ((ax11, ax12), (ax21, ax22)) = plt.subplots(2, 2)
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 
     # ORIGINAL IMAGE
-    ax11.set_title('Original')
-    ax11.imshow(original_image)
+    ax1.set_title('Original')
+    ax1.imshow(original_image)
     # FULL SEGMENTATION
-    ax21.set_title('Semantic: Original')
-    ax21.imshow(original_labels_rgb)
-
-    # INPUT SEGMENTATION - RECONSTRUCTED
-    ax12.set_title('Semantic: Input')
-    input_labels = input_labels[0]
-    input_labels = input_labels.astype(np.uint8)
-    input_labels = merge_label_images(input_labels, labels=labels)
-    input_labels = generate_semantic_rgb(input_labels)
-    predicted_rgb_resized = np.array(resize_and_crop(input_labels, original_size))
-    ax12.imshow(predicted_rgb_resized)
+    ax2.set_title('Semantic: Original')
+    ax2.imshow(original_labels_rgb)
 
     # PREDICTED SEGMENTATION
-    ax22.set_title('Semantic: Predicted')
-    predicted_rgb_resized = np.array(resize_and_crop(predicted_rgb, original_size))
-    ax22.imshow(predicted_rgb_resized)
+    ax3.set_title('Semantic: Predicted')
+    predicted_rgb_resized = np.array(predicted_rgb)
+    ax3.imshow(predicted_rgb_resized)
 
     plt.show()
