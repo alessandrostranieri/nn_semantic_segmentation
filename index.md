@@ -213,7 +213,17 @@ The parameters that we settled on are the following:
 | Optimizer               | Adam    |
 | Learning Rate           | 1e-4    |
 
-Despite several attempts, none of the training runs produced any usable results. The training runs using single dataset showed very slow loss reduction. The runs using the combination of data-sets didn't not produce any error, but gave inconclusive results.
+Despite several attempts, none of the training runs produced any usable results. The training runs using single dataset showed slow loss reduction, but still pure results.
+
+|![input](images/kitti_prediction.png "Input")|![output](images/kitti_predicted.png "Original")|
+|:--:|:--:|
+| *Input Image* | *Semantic Predicted* |
+
+|![input](images/kitti_training.png "Traiing")|
+|:--:|
+| *Training with KITTI* |
+
+The runs using the combination of data-sets didn't not produce any error, but gave inconclusive results.
 
 ## Conclusions
 
