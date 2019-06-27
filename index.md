@@ -215,9 +215,9 @@ The parameters that we settled on are the following:
 
 Despite several attempts, none of the training runs produced any usable results. The training runs using single dataset showed slow loss reduction, but still pure results.
 
-|![input](images/kitti_prediction.png "Input")|![output](images/kitti_predicted.png "Original")|
-|:--:|:--:|
-| *Input Image* | *Semantic Predicted* |
+|![input](images/kitti_prediction_example.png "Prediction Example")|
+|:--:|
+| *Semantic Predicted* |
 
 |![input](images/kitti_training.png "Traiing")|
 |:--:|
