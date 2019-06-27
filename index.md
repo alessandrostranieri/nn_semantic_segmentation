@@ -167,10 +167,16 @@ metrics = ['categorical_accuracy']
 model.compile(optimizer=optimizer, loss=losses, metrics=metrics)
 ```
 
+### Multiple Data-Sources
+
 The trickiest modification involved the data generator. We need a way to map a training instance to the loss function associated to the same data-set, 
 so that only that loss is propagated. This can be accomplished using sample weights during training. A sample weight is in general a vector with an element for each loss function. Each element ranges between 0 and 1, and expresses the contribution of the loss function. By using a one-hot encoding sample weight, it is possible to select exclusively one loss function per data-set. The return type of the data-generator has to change to return the input image, a dictionary with a mask for each output and a dictionary with a sample weight for each data-source.
 
 This is probably clear in the following figure.
+
+|![data-sources](images/DataGenerator_03.png "DataGenerator with multiple sources")|
+|:--:|
+| Diagram of DataGenerator with multiple sources |
 
 And here's is how we write the `__get_item__` method of our generator.
 
@@ -219,6 +225,7 @@ This section gives us the opportunity to reflect on the work done and to conside
 Some of the **next steps** we would take up are:
 
 * Investigate the failure in training in the experiment attempted
+* Improve image transformations
 * Attempt again to implement DeepLab, which should definitely allow for more accurate predictions
 * Use pre-trained weights with DeepLab
 * Add support for the other data-sets
