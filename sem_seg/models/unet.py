@@ -81,7 +81,7 @@ def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) 
     outputs: List[Conv2D] = []
     for k, v in class_layouts.items():
         num_classes = len(v)
-        output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid', name=k)(conv9)
+        output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='softmax', name=k)(conv9)
         outputs.append(output_conv)
 
     model = Model(inputs=input_layer, outputs=outputs)
