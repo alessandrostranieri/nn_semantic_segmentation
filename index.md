@@ -5,7 +5,7 @@ layout: default
 
 ## Introduction
 
-In this project we deal with the problem of semantic segmentation. Our aim is to devise a semantic segmentation architecture in order to leverage multiple data-sets. Before describing how the project was carried out, let's provide some context. In the the next sub-sections we will give an overview of what is semantic segmentation, how it is used and the motivation for our project.
+In this project we deal with the problem of semantic segmentation. Our aim is to devise a semantic segmentation architecture in order to leverage multiple data-sets. Before describing how the project was carried out, let's provide some context. In the the next sections we will give an overview of what is semantic segmentation, how it is used and the motivation for our project.
 
 The model, training and validation steps have been implemented using the [Keras](https://keras.io/) library. Other notable libraries include:
 
@@ -16,11 +16,11 @@ The model, training and validation steps have been implemented using the [Keras]
 
 ## Semantic Segmentation
 
-Semantic Segmentation denotes a class of computer vision problems, whose aim is to divide the region of an image into distinct sub-areas. This effectively translates into labeling each individual pixel in the image, where the label carries a specific information. In the type of information carried by the label lies the difference between two types of semantic segmentation: **pixel-wise** and **instance**.
+Semantic Segmentation denotes a class of computer vision problems, whose aim is to divide the region of an image into distinct sub-areas. This effectively translates into labeling each individual pixel in the image, where the label carries a specific information. In the type of information lies the difference between two types of semantic segmentation: **pixel-wise** and **instance**.
 
 In **pixel-wise** segmentation each pixel is assigned to a single class. This means that an algorithm will typically output an image of the same size, where each pixel value is the label corresponding to a class. For example 1 could be assigned to the class CAR and and 2 to the class PERSON.
 
-In **instance** segmentation a position in the image will actually carry to pieces of information: The type of the segmented object and a single identifier for that object. This means that if the image shows two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. It's fair to say that instance segmentation is harder than pixel-wise.
+In **instance** segmentation a position in the image will carry two pieces of information: The type of the segmented object and a single identifier for that object. This means that if the image contains two cars, the pixel of the part of images will identify them as CAR 1 and CAR 2. It's fair to say that instance segmentation is harder than pixel-wise.
 
 The following pictures are an example of an camera image, a real semantic segmentation image and a colorized semantic segmentation image. The real semantic image is hardly useful to the human eye, as the tipical label values are in the lower part of a 0..255 range.
 
@@ -28,7 +28,7 @@ The following pictures are an example of an camera image, a real semantic segmen
 |:--:|:--:|:--:| 
 | *Original Image* | *Semantic* | *Sematic RGB* |
 
-Semantic segmentation can be considered as a step towards the general goal scene understanding. In image classification problems, the objective is to assign a label to an image, which state what is the pictured object. A more complicated problem can be classifying object and returning their bounding boxes. Semantic segmentation can be considered as a step further, where every pixel of the identified object is returned.
+Semantic segmentation can be considered as a step towards the general goal of scene understanding. In image classification problems, the objective is to assign a label to an image, which state what is the pictured object. A more complicated problem can be classifying object and returning their bounding boxes. Semantic segmentation can be considered as a step further, where every pixel of the identified object is returned.
 
 It becomes obvious then how this problem is of importance in applications such as autonomous driving or landscape monitoring. Semantic segmentation is also used in medical imaging, where it can be used to isolate brain regions, growths or cell nuclei.
 
@@ -36,7 +36,7 @@ It becomes obvious then how this problem is of importance in applications such a
 
 Producing annotated data-sets for semantic segmentation tasks is not easy. One consequence of that is that annotated data-sets can be quite limited in size. This naturally works against the large data-sets requirement of deep-learning algorithms. For this reason it would be an advantage to be able to leverage a combination of several data-sets. This of course comes with the complication that different data-sets are created with different image sizes and different labelling schemes.
 
-## A necessary introduction: the datasets
+## Getting to know the datasets
 
 After having understood the context of this project, the next necessary step consisted in getting acquainted with the data. For this project we gathered information about 4 data-sets, which we try to summarize in the following table. This is important, because we need to implement a way to feed images from different sources to our model.
 
@@ -91,7 +91,7 @@ AS mentioned, different data-sets employ different labelling schemes. For simpli
 
 We will train our models in a supervised learning fashion. Our camera images will be the input, where are the semantic images will be our target.
 
-There are two ways in Keras to feed data during training and prediction: through the method `fit` or the method `fit_generator`. In the first method the data is expected to be already in a `numpy` array format. When using `fit_generator` one must provide a instance that implement the `Sequence` interface. This quite simply means that given an index, the instance will return a batch of data. Keras provides a facility to generate image pairs. However, as we foresaw the need to combine batches of images from different sources, we opted to write a custom generator, which we called `DataGenerator`.
+There are two ways in Keras to feed data during training and prediction: through the method `fit` or the method `fit_generator`. In the first method the data is expected to be already in a `numpy` array format. When using `fit_generator` one must provide a instance that implement the `Sequence` interface, which can be used as a container. Keras provides a facility to generate image pairs. However, as we foresaw the need to combine batches of images from different sources, we opted to write a custom generator, which we called `DataGenerator`.
 
 |![alt text](images/DataGenerator_01.png "Data Generator Diagram")|
 |:--:| 
@@ -103,17 +103,19 @@ In Keras, we can instruct the `fit` method to alternate training and validation 
 
 Our initial approach was to use an implementation of the DeepLab model. In fact, according to [2](#references), it provides the best accuracy on several image data-sets, compared to other architectures. Unfortunately, the model we tried to use did not show any sign of learning. In two epochs the model would reach the best, despite poor, loss value and stop improving on validation loss. Only later we realized that DeepLab network are typically trained from pre-trained weights and we also found better implementations.
 
-In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. U-Nat was designed to work well will small data-sets, which is typically the case with biomedical image sets.  There are some aspects of this architecture that are worth mentioning. On the left we have a contracting network, and on the right a symmetrical path, where the max-pooling is replaced by up-sampling. This is done to increase the resolution. High resolution features from the contracting path are combined with the up-sampled: this is with the intent of re-integrate more local information. The **U** in the term comes from the symmetrical shape of the network. At the final layer a 1x1 convolution is used to map the last component feature vector to the desired number of classes [3](#references). The final layer would then have a 3D shape of $width \times height \times |classes|$. For each pixel, the last axis of the output will contain the probability of the pixel belonging to that class. The expected semantic image comes as a sparse 2D representation. This means that to compare expected and predicted image we must convert the semantic image to a 3D version where the last axis contains the one-hot encoding of the class. The following figure should clarify this.
+In order to continue we then opted for a much simpler architecture: U-Net. U-Net builds upon the *Fully Convolutional Network(FCN)*. U-Net was designed to work well will small data-sets, which is typically the case with biomedical image sets.  Considering the next diagram. there are some aspects of this architecture that are worth mentioning. On the left we have a contracting network, and on the right a symmetrical path, where the max-pooling is replaced by up-sampling. This is done to increase the resolution. High resolution features from the contracting path are combined with the up-sampled: this is with the intent of re-integrate more local information. The **U** in the term comes from the symmetrical shape of the network. 
+
+|![unet](images/U-Net_Image.png "U-Net Diagram")|
+|:--:|
+| U-Net diagram, as presented in the original paper [3](#references) |
+
+At the final layer a 1x1 convolution is used to map the last component feature vector to the desired number of classes [3](#references). The final layer would then have a 3D shape of $width \times height \times classes$. For each pixel, the last axis of the output will contain the probability of the pixel belonging to that class. The expected semantic image comes as a sparse 2D representation. This means that to compare expected and predicted image we must convert the semantic image to a 3D version where the last axis contains the one-hot encoding of the class. The following figure should clarify this.
 
 |![split](images/Input_01.png "Semantic image split")|
 |:--:|
 | Example of semantic image conversion with one-hot categories |
 
-The model's implementation takes largely inspiration from the code provided [here](https://github.com/zhixuhao/unet/blob/master/model.py). The model is fairly simple and it's easy to verify the correctness by simply following the network's diagram.
-
-|![unet](images/U-Net_Image.png "U-Net Diagram")|
-|:--:|
-| U-Net diagram, as presented in the original paper [3](#references) |
+The model's implementation takes largely inspiration from the code provided [here](https://github.com/zhixuhao/unet/blob/master/model.py). 
 
 ## Combining the dataset
 
@@ -127,7 +129,7 @@ Let's see these points one by one.
 
 ### U-Net output
 
-When trained on a single data-set, the model would have a single output, which consists of a layer for each class of object detected. To leverage multiple data-sets we modify U-Net, so that it will be built with a different head for each data-set. Each head will have naturally as many layers as needed for the data-set. The idea behind this is that the network will learn different representation at the final layer, but the earlier one should share the same features.
+When trained on a single data-set, the model would have a single output, which consists of a layer for each class of object detected. To leverage multiple data-sets we modify U-Net, so that it will be built with a different head for each data-set. Each head will have naturally as many layers as needed for the data-set. The idea behind this is that the network will learn different representations at the final layer, but the earlier one should share the same features.
 
 The following snippet shows the little modification in the U-Net code.
 
@@ -144,7 +146,7 @@ def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) 
   outputs: List[Conv2D] = []
   for k, v in class_layouts.items():
       num_classes = len(v)
-      output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='sigmoid', name=k)(conv9)
+      output_conv = Conv2D(filters=num_classes, kernel_size=1, activation='softmax', name=k)(conv9)
       outputs.append(output_conv)
 
   model = Model(inputs=input_layer, outputs=outputs)
@@ -154,7 +156,7 @@ def unet(input_size: Tuple[int, int, int], class_layouts: Dict[str, List[int]]) 
 
 ### Multiple losses
 
-Having multiple heads requires multiple loss function, because the differences to propagate are different. Adding multiple loss function is quite straightforward.
+Having multiple heads requires multiple loss functions, so that the right weights are updated. Adding multiple loss function is quite straightforward.
 
 ```python
 losses: Dict[str, str] = dict()
@@ -169,10 +171,9 @@ model.compile(optimizer=optimizer, loss=losses, metrics=metrics)
 
 ### Multiple Data-Sources
 
-The trickiest modification involved the data generator. We need a way to map a training instance to the loss function associated to the same data-set, 
-so that only that loss is propagated. This can be accomplished using sample weights during training. A sample weight is in general a vector with an element for each loss function. Each element ranges between 0 and 1, and expresses the contribution of the loss function. By using a one-hot encoding sample weight, it is possible to select exclusively one loss function per data-set. The return type of the data-generator has to change to return the input image, a dictionary with a mask for each output and a dictionary with a sample weight for each data-source.
+The trickiest modification involved the data generator. We need a way to map a training instance to the loss function associated to the same data-set, so that only that loss is propagated. This can be accomplished using sample weights during training. A sample weight is in general a vector with an element for each loss function. Each element ranges between 0 and 1, and expresses the contribution of the loss function. By using a one-hot encoding sample weight, it is possible to select exclusively one loss function per data-set. The return type of the data-generator has to change to return the input image, a dictionary with a mask for each output and a dictionary with a sample weight for each data-source.
 
-This is probably clear in the following figure.
+A clarifying figure is at this point due.
 
 |![data-sources](images/DataGenerator_03.png "DataGenerator with multiple sources")|
 |:--:|
@@ -226,13 +227,14 @@ Some of the **next steps** we would take up are:
 
 * Investigate the failure in training in the experiment attempted
 * Improve image transformations
+* Use more appropriate metrics
 * Attempt again to implement DeepLab, which should definitely allow for more accurate predictions
 * Use pre-trained weights with DeepLab
 * Add support for the other data-sets
 
 ## References
 
-1. [DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs](https://arxiv.org/abs/1606.00915)
-2. [A Review on Deep Learning Techniques Applied to Semantic Segmentation](https://arxiv.org/abs/1704.06857)
+1. [A Review on Deep Learning Techniques Applied to Semantic Segmentation](https://arxiv.org/abs/1704.06857)
+2. [DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs](https://arxiv.org/abs/1606.00915)
 3. [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
 
