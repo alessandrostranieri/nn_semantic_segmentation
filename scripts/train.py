@@ -83,7 +83,7 @@ model = unet(input_size=input_size, class_layouts=class_layouts)
 losses: Dict[str, str] = dict()
 for ds in datasets:
     losses[ds] = 'categorical_crossentropy'
-optimizers: Dict[str, Optimizer] = {'adam': Adam(lr=7e-4, epsilon=1e-8, decay=1e-6),
+optimizers: Dict[str, Optimizer] = {'adam': Adam(),
                                     'sgd': SGD(lr=1e-4)}
 optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']
