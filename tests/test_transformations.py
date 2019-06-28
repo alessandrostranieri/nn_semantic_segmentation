@@ -111,7 +111,7 @@ def test_repeated_random_crop_returns_different_images():
     cropped_1: Image.Image = random_crop(test_camera_image)
     cropped_2: Image.Image = random_crop(test_camera_image)
 
-    cropped_1_np: np.ndarray = np.array(cropped_1)
-    cropped_2_np: np.ndarray = np.array(cropped_2)
+    cropped_1_np: np.ndarray = np.array(cropped_1[0])
+    cropped_2_np: np.ndarray = np.array(cropped_2[0])
 
     assert not np.array_equal(cropped_1_np, cropped_2_np)

@@ -67,11 +67,13 @@ class DataGenerator(Sequence):
         for idx, instance in enumerate(pure_batch):
             image, mask, ds_idx = instance
 
-            transformed_image: Image.Image = self.transformation(image)
+            transformed = self.transformation([image, mask])
+            transformed_image: Image.Image = transformed[0]
+            transformed_mask: Image.Image = transformed[1]
+
             image_array: np.ndarray = np.array(transformed_image) / 255
             batch_images[idx] = image_array
 
-            transformed_mask: Image.Image = self.transformation(mask)
             mask_array: np.ndarray = np.array(transformed_mask)
             prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
             batch_masks[idx] = prepared_mask
