@@ -3,6 +3,7 @@ from typing import Tuple, List
 
 import numpy as np
 from PIL import Image
+from numpy.random import RandomState
 
 
 class ImageTransformation(metaclass=ABCMeta):
@@ -31,12 +32,32 @@ class Crop(ImageTransformation):
         self.new_height = target_size[1]
 
     def __call__(self, input_image: Image.Image) -> Image.Image:
-
         old_width, old_height = input_image.size
         left = (old_width - self.new_width) / 2
         top = (old_height - self.new_height) / 2
         right = (old_width + self.new_width) / 2
         bottom = (old_height + self.new_height) / 2
+
+        return input_image.crop((left, top, right, bottom))
+
+
+class RandomCrop(ImageTransformation):
+
+    def __init__(self, target_size: Tuple[int, int], random_seed: int = 42):
+        super().__init__()
+
+        self.random_state: RandomState = RandomState(random_seed)
+        self.target_width = target_size[0]
+        self.target_height = target_size[1]
+
+    def __call__(self, input_image: Image.Image) -> Image.Image:
+        in_width, in_height = input_image.size
+        width_range = (0, in_width - self.target_width)
+        height_range = (0, in_height - self.target_height)
+        left: int = self.random_state.randint(*width_range)
+        right: int = left + self.target_width
+        top: int = self.random_state.randint(*height_range)
+        bottom: int = top + self.target_height
 
         return input_image.crop((left, top, right, bottom))
 

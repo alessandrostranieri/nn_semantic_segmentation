@@ -1,9 +1,13 @@
+from typing import Tuple
+
 import numpy as np
 from PIL import Image
 
-from sem_seg.data.transformations import split_label_image, merge_label_images
+from sem_seg.data.data_source import KittiDataSource
+from sem_seg.data.transformations import split_label_image, merge_label_images, RandomCrop
 from sem_seg.utils.labels import generate_semantic_rgb, pad_and_resize, \
     resize_and_crop
+from sem_seg.utils.paths import KITTI_BASE_DIR
 
 
 def test_split_label_image():
@@ -93,3 +97,21 @@ def test_resize_and_crop():
     actual_array: np.ndarray = np.array(actual).swapaxes(0, 1)
 
     assert (expected == actual_array).all()
+
+
+def test_repeated_random_crop_returns_different_images():
+    # OPEN AN IMAGE
+    kitti_data_source: KittiDataSource = KittiDataSource(KITTI_BASE_DIR)
+    train_data: Tuple[str, str] = kitti_data_source.get_train_data()
+    test_camera_image_path: str = train_data[0][0]
+    test_camera_image: Image.Image = Image.open(test_camera_image_path)
+
+    # CROP IT TWICE
+    random_crop: RandomCrop = RandomCrop(target_size=(16, 16))
+    cropped_1: Image.Image = random_crop(test_camera_image)
+    cropped_2: Image.Image = random_crop(test_camera_image)
+
+    cropped_1_np: np.ndarray = np.array(cropped_1)
+    cropped_2_np: np.ndarray = np.array(cropped_2)
+
+    assert not np.array_equal(cropped_1_np, cropped_2_np)

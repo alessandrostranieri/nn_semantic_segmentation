@@ -2,19 +2,15 @@ import pathlib as pl
 from argparse import ArgumentParser
 from typing import Tuple, List, Dict
 
-import numpy as np
 import pandas as pd
-from PIL import Image
-from keras import Model
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.engine.saving import load_model
 from keras.optimizers import Optimizer, Adam, SGD
 
 from sem_seg.data.data_source import DataSource, KittiDataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import Crop
+from sem_seg.data.transformations import RandomCrop
 from sem_seg.models.unet import unet
-from sem_seg.utils.labels import CityscapesLabels, generate_semantic_rgb
+from sem_seg.utils.labels import CityscapesLabels
 from sem_seg.utils.paths import KITTI_BASE_DIR, CITYSCAPES_BASE_DIR, MODELS_DIR
 
 # PARSE ARGUMENTS
@@ -66,14 +62,14 @@ for data_source in datasets:
     data_sources.append(data_sources_dict[data_source])
 train_generator = DataGenerator(data_sources=data_sources,
                                 phase='train',
-                                transformation=Crop(image_size),
+                                transformation=RandomCrop(target_size=image_size, random_seed=random_seed),
                                 target_size=image_size,
                                 batch_size=batch_size,
                                 active_labels=CityscapesLabels.ALL,
                                 random_seed=random_seed)
 validation_generator = DataGenerator(data_sources=data_sources,
                                      phase='val',
-                                     transformation=Crop(image_size),
+                                     transformation=RandomCrop(target_size=image_size, random_seed=random_seed),
                                      target_size=image_size,
                                      batch_size=batch_size,
                                      active_labels=CityscapesLabels.ALL,
@@ -108,20 +104,3 @@ history = model.fit_generator(generator=train_generator,
 print(f'Saving History')
 history_df: pd.DataFrame = pd.DataFrame(history.history)
 history_df.to_csv(save_full_path / 'history.csv')
-
-# LOAD MODEL
-loaded_model: Model = load_model(str(save_full_path / 'model.h5'))
-
-# PREDICT
-prediction_outputs = loaded_model.predict(validation_generator[0][0])
-if not isinstance(prediction_outputs, list):
-    prediction_outputs = [prediction_outputs]
-
-# SAVE FOR INSPECTION
-for idx, prediction_output in enumerate(prediction_outputs):
-    # FIRST OF THE BATCH
-    predicted_single = prediction_output[0]
-    predicted_semantic = np.argmax(predicted_single, axis=-1)
-    predicted_semantic_rgb = generate_semantic_rgb(predicted_semantic)
-    predicted_pil: Image.Image = Image.fromarray(predicted_semantic_rgb)
-    predicted_pil.save(str(save_full_path / f'predicted{idx}.png'))
