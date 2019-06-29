@@ -84,7 +84,7 @@ losses: Dict[str, str] = dict()
 for ds in datasets:
     losses[ds] = 'categorical_crossentropy'
 optimizers: Dict[str, Optimizer] = {'adam': Adam(),
-                                    'sgd': SGD(lr=1e-4)}
+                                    'sgd': SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)}
 optimizer: Optimizer = optimizers[optim]
 metrics = ['categorical_accuracy']
 model.compile(optimizer=optimizer, loss=losses, metrics=metrics)

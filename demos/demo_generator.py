@@ -15,6 +15,7 @@ if __name__ == '__main__':
     """
 
     labels = CityscapesLabels.ALL
+    index = 6
 
     # CREATE GENERATOR
     data_sources: List[DataSource] = [CityscapesDataSource(CITYSCAPES_BASE_DIR)]
@@ -26,13 +27,13 @@ if __name__ == '__main__':
                                              active_labels=labels)
 
     # GENERATOR ORIGINAL IMAGES
-    original_image, original_labels, _ = generator.get_batch(0)[0]
+    original_image, original_labels, _ = generator.get_batch(index)[0]
     original_image_np: np.ndarray = np.array(original_image)
     original_labels_np: np.ndarray = np.array(original_labels)
     original_labels_rgb: np.ndarray = generate_semantic_rgb(original_labels_np)
 
     # GENERATOR PRE-PROCESSED IMAGES
-    image_batch, labels_batch, _ = generator[0]
+    image_batch, labels_batch, _ = generator[index]
 
     # GET SINGLE IMAGES FROM BATCH
     input_image = image_batch[0] * 255
