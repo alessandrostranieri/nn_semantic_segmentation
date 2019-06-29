@@ -1,108 +1,61 @@
-import itertools
-from typing import Tuple, List
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
 
 from sem_seg.data.data_source import DataSource, CityscapesDataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import merge_label_images, Resize, Crop
+from sem_seg.data.transformations import merge_label_images, RandomCrop
 from sem_seg.utils.labels import generate_semantic_rgb, CityscapesLabels
 from sem_seg.utils.paths import CITYSCAPES_BASE_DIR
 
 if __name__ == '__main__':
+    """
+    This demo allows to visually inspect what the generator is feeding to the model.
+    """
 
     labels = CityscapesLabels.ALL
 
     # CREATE GENERATOR
     data_sources: List[DataSource] = [CityscapesDataSource(CITYSCAPES_BASE_DIR)]
-    training_generator: DataGenerator = DataGenerator(data_sources=data_sources,
-                                                      phase='train',
-                                                      transformation=Crop((256, 256)),
-                                                      batch_size=4,
-                                                      target_size=(256, 256),
-                                                      active_labels=labels)
-
-    # CHECK THAT GENERATOR LEN WORKS
-    generator_len: int = len(training_generator)
-    assert type(generator_len) == int
-    print(f'Number of training batches: {generator_len}')
-
-    # GET FIRST BATCH AND CHECK THAT DIMENSIONS MATCH
-    i, m, sw = training_generator[0]
-    m = m['cityscapes']
-    expected_shape_x: Tuple[int, int, int, int] = (4, 256, 256, 3)
-    assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
-    expected_shape_y: Tuple[int, int, int, int] = (4, 256, 256, len(labels))
-    assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
-
-    # CHECK THE LOOPING THROUGH WORKS
-    for batch in itertools.islice(training_generator, 10):
-        i, m = batch
-        # DO SOMETHING SIMPLE
-        assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
-        assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
-
-    # DO THE SAME FOR VALIDATION GENERATOR
-    validation_generator: DataGenerator = DataGenerator(data_sources=data_sources,
-                                                        phase='val',
-                                                        batch_size=4,
-                                                        transformation=Crop((256, 256)),
-                                                        target_size=(256, 256),
-                                                        active_labels=labels)
-    print(f'Number of validation batches: {len(validation_generator)}')
-    for batch in itertools.islice(validation_generator, 10):
-        i, m = batch
-        # DO SOMETHING SIMPLE
-        assert i.shape == expected_shape_x, f"Image batch in the wrong shape: {i.shape} instead of {expected_shape_x}"
-        assert m.shape == expected_shape_y, f"Mask batch in the wrong shape: {m.shape} instead of {expected_shape_y}"
+    generator: DataGenerator = DataGenerator(data_sources=data_sources,
+                                             phase='train',
+                                             transformation=RandomCrop((256, 256)),
+                                             batch_size=4,
+                                             target_size=(256, 256),
+                                             active_labels=labels)
 
     # GENERATOR ORIGINAL IMAGES
-    val_original_image, val_original_labels, val_original_idx = validation_generator.get_batch(0)[0]
-    val_original_image_array: np.ndarray = np.array(val_original_image)
-    val_original_labels: np.ndarray = np.array(val_original_labels)
-    val_original_label_rgb: np.ndarray = generate_semantic_rgb(val_original_labels)
+    original_image, original_labels, _ = generator.get_batch(0)[0]
+    original_image_np: np.ndarray = np.array(original_image)
+    original_labels_np: np.ndarray = np.array(original_labels)
+    original_labels_rgb: np.ndarray = generate_semantic_rgb(original_labels_np)
 
     # GENERATOR PRE-PROCESSED IMAGES
-    val_image_batch, val_labels_batch, _ = validation_generator[0]
+    image_batch, labels_batch, _ = generator[0]
 
     # GET SINGLE IMAGES FROM BATCH
-    val_image = val_image_batch[0] * 255
-    val_image = val_image.astype(np.uint8)
-    val_labels = val_labels_batch[0]
-    val_labels = val_labels.astype(np.uint8)
+    input_image = image_batch[0] * 255
+    input_image = input_image.astype(np.uint8)
+    input_labels = labels_batch['cityscapes'][0]
+    input_labels = input_labels.astype(np.uint8)
 
     # COLORIZE LABELS
-    val_labels = merge_label_images(val_labels, labels)
-    val_labels_rgb: np.ndarray = generate_semantic_rgb(val_labels)
-
-    # IMAGES RECOMPOSED FROM INPUT
-    resize = Resize(val_original_image.size)
-    val_recomposed_image = resize(Image.fromarray(val_image))
-    val_recomposed_image_array = np.array(val_recomposed_image)
-
-    val_recomposed_labels = resize(Image.fromarray(val_labels))
-    val_recomposed_labels_array = np.array(val_recomposed_labels)
-
-    val_recomposed_labels_rgb = generate_semantic_rgb(val_recomposed_labels_array)
+    merged_labels = merge_label_images(input_labels, labels)
+    input_labels_rgb: np.ndarray = generate_semantic_rgb(merged_labels)
 
     # VISUALIZED DATA
-    fig, ((ax11, ax12, ax13), (ax21, ax22, ax23)) = plt.subplots(2, 3)
+    fig, ((ax11, ax12), (ax21, ax22)) = plt.subplots(2, 2)
 
     ax11.set_title('Original Camera')
-    ax11.imshow(val_original_image_array)
+    ax11.imshow(original_image_np)
 
     ax21.set_title('Original Semantic')
-    ax21.imshow(val_original_label_rgb)
+    ax21.imshow(original_labels_rgb)
 
     ax12.set_title('Input Camera')
-    ax12.imshow(val_image)
+    ax12.imshow(input_image)
     ax22.set_title('Input Semantic')
-    ax22.imshow(val_labels_rgb)
-    ax13.set_title('Recomposed Camera')
-    ax13.imshow(val_recomposed_image_array)
-    ax23.set_title('Recomposed Semantic')
-    ax23.imshow(val_recomposed_labels_rgb)
+    ax22.imshow(input_labels_rgb)
 
     plt.show()
