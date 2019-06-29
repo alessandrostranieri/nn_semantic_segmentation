@@ -1,0 +1,16 @@
+batch_size: 4
+num_epochs: 10
+input_size: 256
+random_seed: 42
+patience: 15
+dataset:
+  - kitti
+  - cityscapes
+optimizer:
+  adam:
+    lr: 0.01
+    beta_1: 0.9
+    beta_2: 0.999
+    decay: 0.1
+save_dir: test
+save_over: True
