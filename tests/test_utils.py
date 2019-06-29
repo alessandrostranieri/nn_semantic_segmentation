@@ -3,6 +3,7 @@ import pathlib as pl
 from keras.optimizers import Adam
 
 from sem_seg.data.data_source import KittiDataSource, CityscapesDataSource
+from sem_seg.data.transformations import Crop
 from sem_seg.utils.configuration import Configuration
 
 
@@ -26,3 +27,5 @@ def test_configuration():
     assert len(configuration.datasets) == 2
     assert isinstance(configuration.datasets[0], KittiDataSource)
     assert isinstance(configuration.datasets[1], CityscapesDataSource)
+
+    assert isinstance(configuration.transformation, Crop)

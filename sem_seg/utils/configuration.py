@@ -5,6 +5,7 @@ import yaml
 from keras.optimizers import Optimizer, Adam, SGD
 
 from sem_seg.data.data_source import DataSource, KittiDataSource, CityscapesDataSource
+from sem_seg.data.transformations import ImageTransformation, Crop, RandomCrop
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR, CITYSCAPES_BASE_DIR
 
 
@@ -15,6 +16,7 @@ class Configuration:
     DEFAULT_RANDOM_SEED: int = 0
     DEFAULT_PATIENCE: int = 10
     DEFAULT_SAVE_DIR: pl.Path = MODELS_DIR / 'demo'
+    DEFAULT_TRANSFORMATION: str = 'random_crop'
 
     KNOWN_OPTIMIZERS: List[str] = ['adam', 'sgd']
 
@@ -32,6 +34,8 @@ class Configuration:
             self.limit: Optional[int] = config_data.get('limit', None)
             self.save_dir: pl.Path = config_data.get('save_dir', Configuration.DEFAULT_SAVE_DIR)
             self.save_over: bool = config_data.get('save_over', False)
+
+            self.transformation: ImageTransformation = self._read_transformation(config_data)
 
             self.optimizer: Optimizer = self._read_optimizer(config_data)
 
@@ -57,3 +61,11 @@ class Configuration:
             datasets.append(CityscapesDataSource(CITYSCAPES_BASE_DIR, limit=self.limit))
 
         return datasets
+
+    def _read_transformation(self, config_data: Dict[str, Any]) -> ImageTransformation:
+        transformation_name = config_data.get('transformation', Configuration.DEFAULT_TRANSFORMATION)
+        assert transformation_name in ['crop', 'random_crop']
+        if transformation_name == 'crop':
+            return Crop(self.input_size)
+        elif transformation_name == 'random_crop':
+            return RandomCrop(self.input_size, self.random_seed)

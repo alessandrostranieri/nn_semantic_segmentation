@@ -32,16 +32,14 @@ copyfile(str(config_file_path), str(save_full_path / 'config.yml'))
 # CREATE DATA GENERATOR
 train_generator = DataGenerator(data_sources=configuration.datasets,
                                 phase='train',
-                                transformation=RandomCrop(target_size=configuration.input_size,
-                                                          random_seed=configuration.random_seed),
+                                transformation=configuration.transformation,
                                 target_size=configuration.input_size,
                                 batch_size=configuration.batch_size,
                                 active_labels=CityscapesLabels.ALL,
                                 random_seed=configuration.random_seed)
 validation_generator = DataGenerator(data_sources=configuration.datasets,
                                      phase='val',
-                                     transformation=RandomCrop(target_size=configuration.input_size,
-                                                               random_seed=configuration.random_seed),
+                                     transformation=configuration.transformation,
                                      target_size=configuration.input_size,
                                      batch_size=configuration.batch_size,
                                      active_labels=CityscapesLabels.ALL,

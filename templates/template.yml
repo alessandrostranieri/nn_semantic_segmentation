@@ -1,6 +1,7 @@
 batch_size: 4
 num_epochs: 10
 input_size: 256
+transformation: crop
 random_seed: 42
 patience: 15
 dataset:
