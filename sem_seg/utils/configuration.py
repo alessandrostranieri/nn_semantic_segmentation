@@ -5,7 +5,7 @@ import yaml
 from keras.optimizers import Optimizer, Adam, SGD
 
 from sem_seg.data.data_source import DataSource, KittiDataSource, CityscapesDataSource
-from sem_seg.data.transformations import ImageTransformation, Crop, RandomCrop
+from sem_seg.data.transformations import ImageTransformation, Crop, RandomCrop, Resize
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR, CITYSCAPES_BASE_DIR
 
 
@@ -64,8 +64,10 @@ class Configuration:
 
     def _read_transformation(self, config_data: Dict[str, Any]) -> ImageTransformation:
         transformation_name = config_data.get('transformation', Configuration.DEFAULT_TRANSFORMATION)
-        assert transformation_name in ['crop', 'random_crop']
+        assert transformation_name in ['crop', 'random_crop', 'resize']
         if transformation_name == 'crop':
             return Crop(self.input_size)
         elif transformation_name == 'random_crop':
             return RandomCrop(self.input_size, self.random_seed)
+        elif transformation_name == 'resize':
+            return Resize(self.input_size)
