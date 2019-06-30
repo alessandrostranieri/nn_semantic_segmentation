@@ -67,6 +67,29 @@ class RandomCrop(ImageTransformation):
         return [input_image.crop((left, top, right, bottom)) for input_image in input_images]
 
 
+class Fit(ImageTransformation):
+
+    def __init__(self, target_size: Tuple[int, int]):
+        super().__init__()
+
+        self.target_size = target_size
+
+    def _apply(self, input_images: List[Image.Image]) -> List[Image.Image]:
+        result = [pad_and_resize(input_image, self.target_size) for input_image in input_images]
+        return result
+
+
+def pad_and_resize(input_image: Image.Image, target_size: Tuple[int, int]) -> Image.Image:
+    longest_size: int = max(*input_image.size)
+    shortest_size: int = min(*input_image.size)
+    square_size: Tuple[int, int] = (longest_size, longest_size)
+    canvas: Image.Image = Image.new(mode=input_image.mode, size=square_size)
+    top_left: Tuple[int, int] = (0, (longest_size - shortest_size) // 2)
+    canvas.paste(input_image, box=top_left)
+    resized = canvas.resize(target_size, resample=Image.NEAREST)
+    return resized
+
+
 def split_label_image(label_image: np.ndarray, classes: List[int]) -> np.ndarray:
     assert label_image.ndim == 2, 'Input image must be single channel'
 

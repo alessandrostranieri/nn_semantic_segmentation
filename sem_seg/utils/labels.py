@@ -88,17 +88,6 @@ def generate_semantic_rgb(label_image: np.ndarray) -> np.ndarray:
     return label_rgb_image
 
 
-def pad_and_resize(input_image: Image.Image, target_size: Tuple[int, int]) -> Image.Image:
-    longest_size: int = max(*input_image.size)
-    shortest_size: int = min(*input_image.size)
-    square_size: Tuple[int, int] = (longest_size, longest_size)
-    canvas: Image.Image = Image.new(mode=input_image.mode, size=square_size)
-    top_left: Tuple[int, int] = (0, (longest_size - shortest_size) // 2)
-    canvas.paste(input_image, box=top_left)
-    resized = canvas.resize(target_size, resample=Image.NEAREST)
-    return resized
-
-
 def resize_and_crop(input_image: np.ndarray, target_size: Tuple[int, int]) -> Image.Image:
     assert input_image.dtype == np.uint8, "Input array type must be np.uint8"
 
