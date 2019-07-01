@@ -5,8 +5,7 @@ from PIL import Image
 
 from sem_seg.data.data_source import KittiDataSource
 from sem_seg.data.transformations import split_label_image, merge_label_images, RandomCrop
-from sem_seg.utils.labels import generate_semantic_rgb, pad_and_resize, \
-    resize_and_crop
+from sem_seg.utils.labels import generate_semantic_rgb, resize_and_crop
 from sem_seg.utils.paths import KITTI_BASE_DIR
 
 

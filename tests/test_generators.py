@@ -106,12 +106,15 @@ def test_generator_combine_data_sources_returns_sample_weight():
                                                   random_seed=42)
 
     original_batch = data_generator.get_batch(0)
-    original_batch_index = original_batch[0][2]
-    assert original_batch_index == 1
+    original_batch_tuple = original_batch[0]
+    original_batch_ds_name = original_batch_tuple[2]
+    assert original_batch_ds_name == 'cityscapes'
 
-    input_batch = data_generator[0]
-    input_indexes = input_batch[2]
-    assert np.equal(input_indexes, np.array([[0, 1], [0, 1], [0, 1], [0, 1]])).all()
+    batch_images, batch_masks, batch_sample_weights = data_generator[0]
+
+    assert isinstance(batch_sample_weights, dict)
+    assert np.equal(batch_sample_weights['kitti'], np.asarray([0, 0, 0, 0])).all()
+    assert np.equal(batch_sample_weights['cityscapes'], np.asarray([1, 1, 1, 1])).all()
 
 
 def test_label_integrity():

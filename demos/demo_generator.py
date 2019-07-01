@@ -3,11 +3,11 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-from sem_seg.data.data_source import DataSource, CityscapesDataSource
+from sem_seg.data.data_source import DataSource, CityscapesDataSource, KittiDataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import merge_label_images, RandomCrop
+from sem_seg.data.transformations import merge_label_images, RandomCrop, Fit
 from sem_seg.utils.labels import generate_semantic_rgb, CityscapesLabels
-from sem_seg.utils.paths import CITYSCAPES_BASE_DIR
+from sem_seg.utils.paths import CITYSCAPES_BASE_DIR, KITTI_BASE_DIR
 
 if __name__ == '__main__':
     """
@@ -18,11 +18,11 @@ if __name__ == '__main__':
     index = 6
 
     # CREATE GENERATOR
-    data_sources: List[DataSource] = [CityscapesDataSource(CITYSCAPES_BASE_DIR)]
+    data_sources: List[DataSource] = [KittiDataSource(KITTI_BASE_DIR)]
     generator: DataGenerator = DataGenerator(data_sources=data_sources,
                                              phase='train',
-                                             transformation=RandomCrop((256, 256)),
-                                             batch_size=4,
+                                             transformation=Fit((256, 256)),
+                                             batch_size=1,
                                              target_size=(256, 256),
                                              active_labels=labels)
 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # GET SINGLE IMAGES FROM BATCH
     input_image = image_batch[0] * 255
     input_image = input_image.astype(np.uint8)
-    input_labels = labels_batch['cityscapes'][0]
+    input_labels = labels_batch['kitti'][0]
     input_labels = input_labels.astype(np.uint8)
 
     # COLORIZE LABELS

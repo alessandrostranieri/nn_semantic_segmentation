@@ -24,7 +24,7 @@ class Configuration:
         super().__init__()
 
         with config_file.open(mode='r') as f:
-            config_data = yaml.load(f)
+            config_data = yaml.safe_load(f)
 
             self.batch_size: int = config_data.get('batch_size', Configuration.DEFAULT_BATCH_SIZE)
             self.num_epochs: int = config_data.get('num_epochs', Configuration.DEFAULT_NUM_EPOCHS)

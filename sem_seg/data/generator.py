@@ -59,49 +59,50 @@ class DataGenerator(Sequence):
         return int(np.ceil(len(self.file_paths) / float(self.batch_size)))
 
     def __getitem__(self, index) -> Tuple[np.ndarray, Dict[str, np.ndarray], Dict[str, np.ndarray]]:
+        # SIMPLE 4-DIMENSIONAL MATRIX, FIRST DIMENSION IS BATCHES
         batch_images: np.ndarray = np.zeros(((self.batch_size,) + self.target_size + (3,)))
-        batch_masks: np.ndarray = np.zeros(((self.batch_size,) + self.target_size + (len(self.classes),)))
-        batch_ds: np.ndarray = np.zeros((self.batch_size, len(self.data_sources)))
-        batch_ds = np.squeeze(batch_ds)
-        pure_batch = self.get_batch(index)
+        # THIS IS A DICTIONARY, ALL MATRICES ARE ZEROED, EXCEPT FOR THE ACTIVE TARGETS
+        batch_masks: Dict[str, np.ndarray] = {}
+        for data_source in self.data_sources:
+            batch_masks[data_source.get_name()] = np.zeros(((self.batch_size,) + self.target_size + (len(self.classes),))) # CHANGE CLASSES
+        # THIS IS A DICTIONARY OF 1-D VECTORS
+        batch_sample_weights: Dict[str, np.ndarray] = {}
+        for data_source in self.data_sources:
+            batch_sample_weights[data_source.get_name()] = np.zeros(shape=self.batch_size)
 
-        for idx, instance in enumerate(pure_batch):
-            image, mask, ds_idx = instance
+        # LOOP THROUGH ORIGINAL DATA
+        original_batch = self.get_batch(index)
+        for batch_index, instance in enumerate(original_batch):
+            image, mask, ds_name = instance
 
+            # TRANSFORM IMAGE AND MASK
             transformed = self.transformation([image, mask])
             transformed_image: Image.Image = transformed[0]
             transformed_mask: Image.Image = transformed[1]
 
+            # STORE IMAGE
             image_array: np.ndarray = np.array(transformed_image) / 255
-            batch_images[idx] = image_array
+            batch_images[batch_index] = image_array
 
+            # STORE MASK
             mask_array: np.ndarray = np.array(transformed_mask)
             prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
-            batch_masks[idx] = prepared_mask
+            batch_masks[ds_name][batch_index] = prepared_mask
 
-            one_hot_ds: np.ndarray = self.data_source_encoder[ds_idx]
-            one_hot_ds = one_hot_ds.squeeze()
-            batch_ds[idx] = one_hot_ds
+            # STORE SAMPLE WEIGHTS
+            batch_sample_weights[ds_name][batch_index] = 1.0
 
-        targets: Dict[str, np.ndarray] = dict()
-        sample_weights: Dict[str, np.ndarray] = dict()
-        for idx, ds in enumerate(self.data_sources):
-            targets[ds.get_name()] = batch_masks
-            if batch_ds.ndim == 1:
-                sample_weights[ds.get_name()] = batch_ds
-            else:
-                sample_weights[ds.get_name()] = batch_ds[:, idx]
+        return batch_images, batch_masks, batch_sample_weights
 
-        return batch_images, targets, sample_weights
-
-    def get_batch(self, index: int) -> List[Tuple[Image.Image, Image.Image, int]]:
+    def get_batch(self, index: int) -> List[Tuple[Image.Image, Image.Image, str]]:
         batch_names: List[Tuple[str, str, int]] = self.file_paths[index * self.batch_size:(index + 1) * self.batch_size]
 
-        output_batch: List[Tuple[Image.Image, Image.Image, int]] = []
+        output_batch: List[Tuple[Image.Image, Image.Image, str]] = []
         for batch_image, batch_mask, batch_ds in batch_names:
             image: Image.Image = Image.open(batch_image)
             mask: Image.Image = Image.open(batch_mask)
-            output_batch.append((image, mask, batch_ds))
+            ds_name: str = self.data_sources[batch_ds].get_name()
+            output_batch.append((image, mask, ds_name))
 
         return output_batch
 
