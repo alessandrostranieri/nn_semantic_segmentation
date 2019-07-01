@@ -37,6 +37,7 @@ train_generator = DataGenerator(data_sources=configuration.datasets,
                                 batch_size=configuration.batch_size,
                                 active_labels=CityscapesLabels.ALL,
                                 random_seed=configuration.random_seed)
+train_generator.summary()
 validation_generator = DataGenerator(data_sources=configuration.datasets,
                                      phase='val',
                                      transformation=configuration.transformation,

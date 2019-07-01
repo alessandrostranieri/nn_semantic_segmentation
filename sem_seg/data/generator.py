@@ -26,6 +26,7 @@ class DataGenerator(Sequence):
         super().__init__()
 
         self.data_sources = data_sources
+        self.phase = phase
         self.target_size = target_size[0], target_size[1]
         self.batch_size = batch_size
         self.classes = [1] if not active_labels else active_labels
@@ -33,9 +34,9 @@ class DataGenerator(Sequence):
 
         self.file_paths: List[Tuple[str, str, int]] = []
         for index, source in enumerate(self.data_sources):
-            if phase == 'train':
+            if self.phase == 'train':
                 file_names = source.get_train_data()
-            elif phase == 'val':
+            elif self.phase == 'val':
                 file_names = source.get_val_data()
             else:
                 raise ValueError
@@ -103,3 +104,6 @@ class DataGenerator(Sequence):
             output_batch.append((image, mask, batch_ds))
 
         return output_batch
+
+    def summary(self) -> None:
+        print(f'Generator: Phase <{self.phase}> - Number of data sources: <{len(self.data_sources)}> - Number of samples <{len(self.file_paths)}>')

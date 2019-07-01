@@ -1,9 +1,9 @@
 batch_size: 4
-num_epochs: 1
+num_epochs: 5
 input_size: 64
 random_seed: 42
 patience: 15
-limit: 10
+limit: 0
 dataset:
   - kitti
 optimizer:
