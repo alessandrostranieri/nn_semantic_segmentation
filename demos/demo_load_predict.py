@@ -8,7 +8,7 @@ from keras.engine.saving import load_model
 
 from sem_seg.data.data_source import KittiDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import Crop
+from sem_seg.data.transformations import Crop, from_pil_to_np
 from sem_seg.utils.labels import generate_semantic_rgb, CityscapesLabels
 from sem_seg.utils.paths import MODELS_DIR, KITTI_BASE_DIR
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     predicted_labels: np.ndarray = np.argmax(predicted.squeeze(), -1)
 
     # VISUALIZE ORIGINAL, TARGET AND PREDICTED
-    original_labels_array = np.array(original_labels)
+    original_labels_array = from_pil_to_np(original_labels)
     original_labels_rgb = generate_semantic_rgb(original_labels_array)
     predicted_rgb = generate_semantic_rgb(predicted_labels)
 

@@ -113,3 +113,8 @@ def merge_label_images(label_image: np.ndarray, labels: List[int]) -> np.ndarray
         result[mask] = label
 
     return result
+
+
+# noinspection PyTypeChecker
+def from_pil_to_np(input_image: Image.Image) -> np.ndarray:
+    return np.asarray(input_image)

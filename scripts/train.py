@@ -7,7 +7,6 @@ import pandas as pd
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import RandomCrop
 from sem_seg.models.unet import unet
 from sem_seg.utils.configuration import Configuration
 from sem_seg.utils.labels import CityscapesLabels

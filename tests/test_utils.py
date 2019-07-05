@@ -8,7 +8,7 @@ from sem_seg.utils.configuration import Configuration
 
 
 def test_configuration():
-    configuration: Configuration = Configuration(pl.Path('../templates/template.yml'))
+    configuration: Configuration = Configuration(pl.Path('.').parent / 'templates' / 'template.yml')
 
     assert configuration.batch_size == 4
     assert configuration.num_epochs == 10

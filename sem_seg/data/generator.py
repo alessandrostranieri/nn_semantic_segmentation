@@ -6,7 +6,7 @@ from keras.utils import Sequence
 from sklearn.utils import shuffle
 
 from sem_seg.data.data_source import DataSource
-from sem_seg.data.transformations import split_label_image, ImageTransformation
+from sem_seg.data.transformations import split_label_image, ImageTransformation, from_pil_to_np
 
 
 class DataGenerator(Sequence):
@@ -64,7 +64,8 @@ class DataGenerator(Sequence):
         # THIS IS A DICTIONARY, ALL MATRICES ARE ZEROED, EXCEPT FOR THE ACTIVE TARGETS
         batch_masks: Dict[str, np.ndarray] = {}
         for data_source in self.data_sources:
-            batch_masks[data_source.get_name()] = np.zeros(((self.batch_size,) + self.target_size + (len(self.classes),))) # CHANGE CLASSES
+            batch_size: Tuple[int, int, int, int] = ((self.batch_size,) + self.target_size + (len(self.classes),))
+            batch_masks[data_source.get_name()] = np.zeros(batch_size)
         # THIS IS A DICTIONARY OF 1-D VECTORS
         batch_sample_weights: Dict[str, np.ndarray] = {}
         for data_source in self.data_sources:
@@ -81,11 +82,11 @@ class DataGenerator(Sequence):
             transformed_mask: Image.Image = transformed[1]
 
             # STORE IMAGE
-            image_array: np.ndarray = np.array(transformed_image) / 255
+            image_array: np.ndarray = from_pil_to_np(transformed_image) / 255
             batch_images[batch_index] = image_array
 
             # STORE MASK
-            mask_array: np.ndarray = np.array(transformed_mask)
+            mask_array: np.ndarray = from_pil_to_np(transformed_mask)
             prepared_mask: np.ndarray = split_label_image(mask_array, self.classes)
             batch_masks[ds_name][batch_index] = prepared_mask
 
@@ -107,4 +108,6 @@ class DataGenerator(Sequence):
         return output_batch
 
     def summary(self) -> None:
-        print(f'Generator: Phase <{self.phase}> - Number of data sources: <{len(self.data_sources)}> - Number of samples <{len(self.file_paths)}>')
+        print(f'Generator: Phase <{self.phase}> - '
+              f'Number of data sources: <{len(self.data_sources)}> - '
+              f'Number of samples <{len(self.file_paths)}>')

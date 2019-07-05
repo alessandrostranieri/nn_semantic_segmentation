@@ -3,7 +3,7 @@ from typing import List
 
 from sem_seg.data.data_source import KittiDataSource, CityscapesDataSource, DataSource
 from sem_seg.data.generator import DataGenerator
-from sem_seg.data.transformations import Resize, split_label_image, merge_label_images, Crop
+from sem_seg.data.transformations import Resize, split_label_image, merge_label_images, Crop, from_pil_to_np
 from sem_seg.utils.labels import CityscapesLabels
 from sem_seg.utils.paths import KITTI_BASE_DIR, CITYSCAPES_BASE_DIR
 import pathlib as pl
@@ -133,8 +133,8 @@ def test_label_integrity():
                                                         random_seed=42)
 
     original_image, original_labels, _ = train_data_generator.get_batch(0)[0]
-    resized_original = Resize((256, 256))(original_labels)
-    resized_original_array = np.array(resized_original)
+    resized_original = Resize((256, 256))(original_labels)[0]
+    resized_original_array = from_pil_to_np(resized_original)
 
     resized_split = split_label_image(resized_original_array, CityscapesLabels.ALL)
     resized_merged = merge_label_images(resized_split, CityscapesLabels.ALL)
@@ -153,11 +153,11 @@ def test_argmax_on_split_images():
                                                         random_seed=42)
 
     original_image, original_labels, _ = train_data_generator.get_batch(0)[0]
-    resized_original_labels = Resize((256, 256))(original_labels)
-    resized_original_labels_np = np.array(resized_original_labels)
+    resized_original_labels = Crop((256, 256))(original_labels)[0]
+    resized_original_labels_np = from_pil_to_np(resized_original_labels)
 
     input_image, input_labels, _ = train_data_generator[0]
-    input_labels = input_labels['cityscapes']
+    input_labels = input_labels['kitti']
     input_labels = input_labels[0]
     input_labels_merged = np.argmax(input_labels, axis=-1)
 

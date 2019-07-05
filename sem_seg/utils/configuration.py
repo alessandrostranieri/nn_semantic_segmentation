@@ -41,7 +41,8 @@ class Configuration:
 
             self.datasets: List[DataSource] = self._read_datasets(config_data)
 
-    def _read_optimizer(self, config_data) -> Optimizer:
+    @staticmethod
+    def _read_optimizer(config_data) -> Optimizer:
         optimizer_config: Dict[str, Any] = config_data['optimizer']
         optimizer_name = list(optimizer_config.keys())[0]
         assert optimizer_name in Configuration.KNOWN_OPTIMIZERS, f'Unknown optimizer: {optimizer_name}'
