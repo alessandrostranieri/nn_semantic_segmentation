@@ -1,10 +1,11 @@
-from typing import Tuple, List
+from enum import Enum, unique
+from typing import Tuple, List, Dict
 
 import numpy as np
 from PIL import Image, ImageOps
 
 
-class Label:
+class LabelColor:
     """Represents a segmentation label."""
 
     def __init__(self, name: str, label_id: int, color: Tuple[int, int, int]) -> None:
@@ -21,42 +22,42 @@ class CityscapesLabels:
 
 # @formatter:off
 # noinspection PyPep8
-segmentation_labels: List[Label] = [
-    Label('unlabeled'            ,  0 , (  0,  0,  0) ),
-    Label('ego vehicle'          ,  1 , (  0,  0,  0) ),
-    Label('rectification border' ,  2 , (  0,  0,  0) ),
-    Label('out of roi'           ,  3 , (  0,  0,  0) ),
-    Label('static'               ,  4 , (  0,  0,  0) ),
-    Label('dynamic'              ,  5 , (111, 74,  0) ),
-    Label('ground'               ,  6 , ( 81,  0, 81) ),
-    Label('road'                 ,  7 , (128, 64,128) ),
-    Label('sidewalk'             ,  8 , (244, 35,232) ),
-    Label('parking'              ,  9 , (250,170,160) ),
-    Label('rail track'           , 10 , (230,150,140) ),
-    Label('building'             , 11 , ( 70, 70, 70) ),
-    Label('wall'                 , 12 , (102,102,156) ),
-    Label('fence'                , 13 , (190,153,153) ),
-    Label('guard rail'           , 14 , (180,165,180) ),
-    Label('bridge'               , 15 , (150,100,100) ),
-    Label('tunnel'               , 16 , (150,120, 90) ),
-    Label('pole'                 , 17 , (153,153,153) ),
-    Label('polegroup'            , 18 , (153,153,153) ),
-    Label('traffic light'        , 19 , (250,170, 30) ),
-    Label('traffic sign'         , 20 , (220,220,  0) ),
-    Label('vegetation'           , 21 , (107,142, 35) ),
-    Label('terrain'              , 22 , (152,251,152) ),
-    Label('sky'                  , 23 , ( 70,130,180) ),
-    Label('person'               , 24 , (220, 20, 60) ),
-    Label('rider'                , 25 , (255,  0,  0) ),
-    Label('car'                  , 26 , (  0,  0,142) ),
-    Label('truck'                , 27 , (  0,  0, 70) ),
-    Label('bus'                  , 28 , (  0, 60,100) ),
-    Label('caravan'              , 29 , (  0,  0, 90) ),
-    Label('trailer'              , 30 , (  0,  0,110) ),
-    Label('train'                , 31 , (  0, 80,100) ),
-    Label('motorcycle'           , 32 , (  0,  0,230) ),
-    Label('bicycle'              , 33 , (119, 11, 32) ),
-    Label('license plate'        , -1 , (  0,  0,142) ),
+segmentation_labels: List[LabelColor] = [
+    LabelColor('unlabeled'            ,  0 , (  0,  0,  0) ),
+    LabelColor('ego vehicle'          ,  1 , (  0,  0,  0) ),
+    LabelColor('rectification border' ,  2 , (  0,  0,  0) ),
+    LabelColor('out of roi'           ,  3 , (  0,  0,  0) ),
+    LabelColor('static'               ,  4 , (  0,  0,  0) ),
+    LabelColor('dynamic'              ,  5 , (111, 74,  0) ),
+    LabelColor('ground'               ,  6 , ( 81,  0, 81) ),
+    LabelColor('road'                 ,  7 , (128, 64,128) ),
+    LabelColor('sidewalk'             ,  8 , (244, 35,232) ),
+    LabelColor('parking'              ,  9 , (250,170,160) ),
+    LabelColor('rail track'           , 10 , (230,150,140) ),
+    LabelColor('building'             , 11 , ( 70, 70, 70) ),
+    LabelColor('wall'                 , 12 , (102,102,156) ),
+    LabelColor('fence'                , 13 , (190,153,153) ),
+    LabelColor('guard rail'           , 14 , (180,165,180) ),
+    LabelColor('bridge'               , 15 , (150,100,100) ),
+    LabelColor('tunnel'               , 16 , (150,120, 90) ),
+    LabelColor('pole'                 , 17 , (153,153,153) ),
+    LabelColor('polegroup'            , 18 , (153,153,153) ),
+    LabelColor('traffic light'        , 19 , (250,170, 30) ),
+    LabelColor('traffic sign'         , 20 , (220,220,  0) ),
+    LabelColor('vegetation'           , 21 , (107,142, 35) ),
+    LabelColor('terrain'              , 22 , (152,251,152) ),
+    LabelColor('sky'                  , 23 , ( 70,130,180) ),
+    LabelColor('person'               , 24 , (220, 20, 60) ),
+    LabelColor('rider'                , 25 , (255,  0,  0) ),
+    LabelColor('car'                  , 26 , (  0,  0,142) ),
+    LabelColor('truck'                , 27 , (  0,  0, 70) ),
+    LabelColor('bus'                  , 28 , (  0, 60,100) ),
+    LabelColor('caravan'              , 29 , (  0,  0, 90) ),
+    LabelColor('trailer'              , 30 , (  0,  0,110) ),
+    LabelColor('train'                , 31 , (  0, 80,100) ),
+    LabelColor('motorcycle'           , 32 , (  0,  0,230) ),
+    LabelColor('bicycle'              , 33 , (119, 11, 32) ),
+    LabelColor('license plate'        , -1 , (  0,  0,142) ),
 ]
 # @formatter:on
 
@@ -96,3 +97,22 @@ def resize_and_crop(input_image: np.ndarray, target_size: Tuple[int, int]) -> Im
     fitted = ImageOps.fit(input_pil_image, target_size)
 
     return fitted
+
+
+@unique
+class Label(Enum):
+
+    CAR = 1
+    PERSON = 2
+    ROAD = 3
+    SKY = 4
+    TREE = 5
+
+
+class Ade20Label:
+
+    def __init__(self, id: int, names: List[str]) -> None:
+        super().__init__()
+
+        self.id = id
+        self.names = names

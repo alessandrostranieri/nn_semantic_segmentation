@@ -14,3 +14,6 @@ KITTI_RAW_IMAGES_DIR: pl.Path = KITTI_TRAINING / 'image_2' / 'all'
 KITTI_LABEL_IMAGES_DIR: pl.Path = KITTI_TRAINING / 'semantic' / 'all'
 
 CITYSCAPES_BASE_DIR: pl.Path = DATA_DIR / 'cityscapes'
+
+ADE20K_BASE_DIR: pl.Path = DATA_DIR / 'ade20k'
+ADE20K_INDEX_FILE: pl.Path = ADE20K_BASE_DIR / 'ADE20K_2016_07_26' / 'index_ade20k.mat'
